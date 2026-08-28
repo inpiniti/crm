@@ -39,11 +39,11 @@ export function MarkdownEditor({
         onChange={(e) => setValue(e.target.value)}
         rows={rows}
         placeholder={placeholder}
-        className={cn("rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent", tab === "preview" && "hidden")}
+        className={cn("max-h-[45dvh] overflow-y-auto rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 dark:bg-transparent", tab === "preview" && "hidden")}
         {...rest}
       />
       {tab === "preview" && (
-        <div className="min-h-[96px] px-3 py-2">
+        <div className="max-h-[45dvh] min-h-[96px] overflow-y-auto px-3 py-2">
           {value.trim() ? <Markdown>{value}</Markdown> : <span className="text-[13px] text-text-3">아직 내용이 없어요</span>}
         </div>
       )}
