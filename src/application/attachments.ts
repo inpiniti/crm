@@ -16,8 +16,16 @@ async function assertOwnerExists(deps: Deps, ownerType: AttachmentOwnerType, own
 }
 
 function safeFileName(name: string): string {
-  // Storage key 에 못 쓰는 문자 제거. 원본 이름은 DB 에 따로 보관.
-  return name.replace(/[^\w.\-가-힣]/g, "_").slice(0, 120) || "file";
+  // Supabase Storage key 는 ASCII 만 허용 (한글 등 non-ASCII 는 "Invalid key" 오류).
+  // 원본 이름은 DB 에 따로 보관하고, 다운로드 시 signed URL 의 download 옵션으로 복원.
+  const ext = name.match(/\.([A-Za-z0-9]{1,10})$/)?.[1]?.toLowerCase();
+  const base = name
+    .replace(/\.[^.]*$/, "")
+    .replace(/[^A-Za-z0-9._-]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 80);
+  return `${base || "file"}${ext ? `.${ext}` : ""}`;
 }
 
 export async function uploadAttachment(deps: Deps, ownerType: AttachmentOwnerType, ownerId: Id, file: UploadFile) {
