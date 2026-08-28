@@ -35,12 +35,14 @@ export function WorkTimeline({ taskId, status, work }: { taskId: number; status:
 }
 
 function WorkFields({ defaults }: { defaults?: WorkWithAttachments }) {
+  // 기본 시각은 마운트 시 한 번만 계산 (렌더마다 바뀌면 base-ui 가 uncontrolled 값 변경 경고를 낸다)
+  const [now] = useState(nowDateTimeLocal);
   return (
     <>
       <Textarea name="body" defaultValue={defaults?.body ?? ""} placeholder="무엇을 했나요? (마크다운 가능)" rows={defaults ? 4 : 2} autoFocus={!!defaults} required />
       <div className="grid grid-cols-[1fr_110px_110px] gap-2">
         <Field label="작업 시각">
-          <Input type="datetime-local" name="workedAt" defaultValue={defaults ? toDateTimeLocal(defaults.workedAt) : nowDateTimeLocal()} required />
+          <Input type="datetime-local" name="workedAt" defaultValue={defaults ? toDateTimeLocal(defaults.workedAt) : now} required />
         </Field>
         <Field label="소요(분)">
           <Input type="number" name="durationMin" min={0} step={5} defaultValue={defaults?.durationMin ?? ""} placeholder="90" />

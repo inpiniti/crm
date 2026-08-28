@@ -18,7 +18,11 @@ export async function run(fn: () => Promise<ActionResult | void>): Promise<Actio
     if (/SUPABASE_URL/.test(msg)) return { ok: false, error: msg };
     if (/duplicate key/.test(msg)) return { ok: false, error: "같은 이름이 이미 있어요." };
     if (/closed or deleted task/.test(msg)) return { ok: false, error: "끝난 업무에는 작업을 추가할 수 없어요." };
-    return { ok: false, error: "잠시 저장이 어려워요. 조금 뒤에 다시 시도해 주세요." };
+    if (/Body exceeded|body size|PayloadTooLarge/i.test(msg)) return { ok: false, error: "파일이 너무 커서 보낼 수 없어요. 20MB 이하로 올려 주세요." };
+    if (/Bucket not found/i.test(msg)) return { ok: false, error: "Storage 버킷 'attachments' 가 없어요. supabase/schema.sql 의 마지막 부분을 실행해 주세요." };
+    if (/파일 업로드 실패|다운로드 링크|파일 삭제 실패/.test(msg)) return { ok: false, error: msg };
+    // 원인을 알 수 있게 메시지를 함께 보여준다 (개인용 로컬 앱이라 노출해도 무방)
+    return { ok: false, error: `저장하지 못했어요: ${msg}` };
   }
 }
 
