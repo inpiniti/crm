@@ -1,0 +1,39 @@
+import { notFound } from "next/navigation";
+import { AttachmentList, AttachmentUpload } from "@/components/features/Attachments";
+import { TaskBody, TaskHeader } from "@/components/features/TaskDetail";
+import { WorkTimeline } from "@/components/features/WorkTimeline";
+import { Panel, Section } from "@/components/common/Panel";
+import { listPersonOptions } from "@/infrastructure/supabase/repositories/people";
+import { listProjectOptions } from "@/infrastructure/supabase/repositories/projects";
+import { getTaskDetail } from "@/infrastructure/supabase/repositories/tasks";
+
+export default async function TaskDetailPage({ params }: PageProps<"/tasks/[id]">) {
+  const { id } = await params;
+  const n = Number(id);
+  if (!Number.isInteger(n)) notFound();
+  const [task, projects, people] = await Promise.all([getTaskDetail(n), listProjectOptions(), listPersonOptions()]);
+  if (!task) notFound();
+
+  return (
+    <>
+      <TaskHeader task={task} projects={projects} people={people} />
+      <div className="grid grid-cols-[1fr_340px] gap-6">
+        <Section title="작업 기록">
+          <WorkTimeline taskId={task.id} status={task.status} work={task.work} />
+        </Section>
+        <div className="space-y-6">
+          <Section title="내용">
+            <TaskBody body={task.body} />
+          </Section>
+          <Section title="첨부파일">
+            <Panel className="p-4">
+              <AttachmentList taskId={task.id} attachments={task.attachments} />
+              {task.attachments.length === 0 && <div className="text-[13px] text-text-3">요구사항 문서나 캡처를 붙여 두세요</div>}
+              <AttachmentUpload ownerType="task" ownerId={task.id} taskId={task.id} />
+            </Panel>
+          </Section>
+        </div>
+      </div>
+    </>
+  );
+}

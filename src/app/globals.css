@@ -1,0 +1,167 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  토스증권 톤 — 다크 기본. 플랫, 얇은 구분선, 굵은 숫자, 촘촘한 리스트.
+  포인트 컬러는 파랑 하나. 그림자 없음.
+*/
+:root {
+  --background: #f2f4f6;
+  --foreground: #191f28;
+  --card: #ffffff;
+  --card-foreground: #191f28;
+  --popover: #ffffff;
+  --popover-foreground: #191f28;
+  --primary: #3182f6;
+  --primary-foreground: #ffffff;
+  --secondary: #e8ebee;
+  --secondary-foreground: #191f28;
+  --muted: #eef0f3;
+  --muted-foreground: #6b7684;
+  --accent: #eef0f3;
+  --accent-foreground: #191f28;
+  --destructive: #f04452;
+  --border: #e5e8eb;
+  --input: #dfe3e8;
+  --ring: #3182f6;
+  --radius: 0.75rem;
+
+  /* 앱 전용 */
+  --text-2: #4e5968;
+  --text-3: #8b95a1;
+  --blue: #3182f6;
+  --blue-weak: #e8f3ff;
+  --red: #f04452;
+  --red-weak: #ffeef0;
+  --green: #03b26c;
+  --green-weak: #e6f7f0;
+  --orange: #ff9500;
+  --orange-weak: #fff4e5;
+  --hover: rgba(0, 23, 51, 0.04);
+  color-scheme: light;
+}
+
+.dark {
+  --background: #17171c;
+  --foreground: #ffffff;
+  --card: #1e1e24;
+  --card-foreground: #ffffff;
+  --popover: #24242b;
+  --popover-foreground: #ffffff;
+  --primary: #3182f6;
+  --primary-foreground: #ffffff;
+  --secondary: #2c2c35;
+  --secondary-foreground: #ffffff;
+  --muted: #26262d;
+  --muted-foreground: #8b95a1;
+  --accent: #2a2a32;
+  --accent-foreground: #ffffff;
+  --destructive: #f04452;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #3182f6;
+
+  --text-2: #b0b8c1;
+  --text-3: #6b7684;
+  --blue: #4593fc;
+  --blue-weak: rgba(49, 130, 246, 0.16);
+  --red: #f8626e;
+  --red-weak: rgba(240, 68, 82, 0.16);
+  --green: #21c78a;
+  --green-weak: rgba(3, 178, 108, 0.16);
+  --orange: #ffa733;
+  --orange-weak: rgba(255, 149, 0, 0.16);
+  --hover: rgba(255, 255, 255, 0.05);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-text-2: var(--text-2);
+  --color-text-3: var(--text-3);
+  --color-blue: var(--blue);
+  --color-blue-weak: var(--blue-weak);
+  --color-red: var(--red);
+  --color-red-weak: var(--red-weak);
+  --color-green: var(--green);
+  --color-green-weak: var(--green-weak);
+  --color-orange: var(--orange);
+  --color-orange-weak: var(--orange-weak);
+  --color-hover: var(--hover);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+
+  --font-sans: var(--font-pretendard), "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "tnum" 1;
+  }
+}
+
+/* 숫자 */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* 마크다운 */
+.prose-md {
+  @apply text-sm leading-relaxed text-foreground;
+}
+.prose-md > * + * { margin-top: 0.7em; }
+.prose-md h1 { @apply text-lg font-bold; }
+.prose-md h2 { @apply text-base font-bold; }
+.prose-md h3 { @apply text-sm font-bold; }
+.prose-md ul { @apply list-disc pl-5; }
+.prose-md ol { @apply list-decimal pl-5; }
+.prose-md li + li { margin-top: 0.2em; }
+.prose-md a { @apply text-blue underline underline-offset-2; }
+.prose-md code { @apply rounded bg-muted px-1 py-0.5 text-[12.5px]; }
+.prose-md pre { @apply overflow-x-auto rounded-lg bg-muted p-3 text-[12.5px]; }
+.prose-md pre code { @apply bg-transparent p-0; }
+.prose-md blockquote { @apply border-l-2 border-border pl-3 text-text-2; }
+.prose-md table { @apply w-full border-collapse text-[13px]; }
+.prose-md th, .prose-md td { @apply border border-border px-2 py-1 text-left; }
+.prose-md input[type="checkbox"] { @apply mr-1 align-middle; }
+.prose-md hr { @apply border-border; }
+.prose-md img { @apply max-w-full rounded-lg; }
+
+/* 리스트 행 hover */
+.row-hover:hover { background: var(--hover); }

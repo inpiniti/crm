@@ -1,0 +1,117 @@
+import "server-only";
+import type { ProjectRepository } from "@/application/ports";
+import type { Project, ProjectInput } from "@/domain/projects/project";
+import type { Id } from "@/domain/shared/types";
+import { supabase, unwrap } from "../client";
+import { fromProjectInput, toProject, type ProjectRow } from "../rows";
+import type { Option } from "./companies";
+
+const T = "projects";
+
+export const projectRepository: ProjectRepository = {
+  async findById(id) {
+    const row = unwrap(
+      await supabase().from(T).select("*").eq("id", id).is("deleted_at", null).maybeSingle<ProjectRow>(),
+    );
+    return row ? toProject(row) : null;
+  },
+  async insert(input: ProjectInput) {
+    const row = unwrap(await supabase().from(T).insert(fromProjectInput(input)).select("*").single<ProjectRow>());
+    return toProject(row);
+  },
+  async update(id: Id, input: ProjectInput) {
+    const row = unwrap(
+      await supabase().from(T).update(fromProjectInput(input)).eq("id", id).select("*").single<ProjectRow>(),
+    );
+    return toProject(row);
+  },
+  async setStatus(id, status) {
+    unwrap(await supabase().from(T).update({ status }).eq("id", id));
+  },
+  async softDelete(id) {
+    unwrap(await supabase().from(T).update({ deleted_at: new Date().toISOString() }).eq("id", id));
+  },
+  async countTasks(id) {
+    const r = await supabase()
+      .from("tasks")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", id)
+      .is("deleted_at", null);
+    return r.count ?? 0;
+  },
+};
+
+// ---- 조회 ----
+
+type ProjectJoined = ProjectRow & { company: { id: number; name: string } | null };
+
+export interface ProjectListItem extends Project {
+  companyName: string | null;
+  taskCount: number;
+  openCount: number;
+  doneCount: number;
+  totalMin: number;
+}
+
+export async function listProjects(opts: { includeArchived?: boolean; companyId?: number } = {}): Promise<ProjectListItem[]> {
+  const db = supabase();
+  let q = db.from(T).select("*, company:companies(id,name)").is("deleted_at", null).order("name");
+  if (!opts.includeArchived) q = q.eq("status", "active");
+  if (opts.companyId) q = q.eq("company_id", opts.companyId);
+  const rows = unwrap(await q.returns<ProjectJoined[]>());
+  const summary = unwrap(
+    await db
+      .from("project_summary")
+      .select("*")
+      .returns<{ id: number; task_count: number; open_count: number; done_count: number; total_min: number }[]>(),
+  );
+  const sm = new Map(summary.map((s) => [s.id, s]));
+  return rows
+    .map((r) => {
+      const s = sm.get(r.id);
+      return {
+        ...toProject(r),
+        companyName: r.company?.name ?? null,
+        taskCount: s?.task_count ?? 0,
+        openCount: s?.open_count ?? 0,
+        doneCount: s?.done_count ?? 0,
+        totalMin: Number(s?.total_min ?? 0),
+      };
+    })
+    .sort((a, b) => {
+      // 회사 프로젝트 → 개인 프로젝트, 각각 이름순. archived 는 뒤로
+      if (a.status !== b.status) return a.status === "active" ? -1 : 1;
+      const ac = a.companyName ?? "￿";
+      const bc = b.companyName ?? "￿";
+      return ac.localeCompare(bc, "ko") || a.name.localeCompare(b.name, "ko");
+    });
+}
+
+export async function getProjectDetail(id: number): Promise<ProjectListItem | null> {
+  const all = await listProjects({ includeArchived: true });
+  return all.find((p) => p.id === id) ?? null;
+}
+
+export interface ProjectOption extends Option {
+  companyName: string | null;
+}
+
+/** active 프로젝트만 (업무 생성/이동 대상) */
+export async function listProjectOptions(): Promise<ProjectOption[]> {
+  const rows = unwrap(
+    await supabase()
+      .from(T)
+      .select("id,name, company:companies(name)")
+      .is("deleted_at", null)
+      .eq("status", "active")
+      .order("name")
+      .returns<{ id: number; name: string; company: { name: string } | null }[]>(),
+  );
+  return rows
+    .map((r) => ({
+      id: r.id,
+      label: r.company ? `${r.company.name} · ${r.name}` : `개인 · ${r.name}`,
+      companyName: r.company?.name ?? null,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, "ko"));
+}
