@@ -59,9 +59,9 @@ export function TaskFilters({
         <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-3" />
         <Input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="제목·내용 검색" className="pl-8" />
       </div>
-      <NativeSelect className="w-full" value={sp.get("status") ?? "open"} onChange={(e) => set({ status: e.target.value })}>
-        <NativeSelectOption value="open">진행 중인 것만</NativeSelectOption>
+      <NativeSelect className="w-full" value={sp.get("status") ?? "all"} onChange={(e) => set({ status: e.target.value })}>
         <NativeSelectOption value="all">전체</NativeSelectOption>
+        <NativeSelectOption value="open">진행 중인 것만</NativeSelectOption>
         {TASK_STATUSES.map((s) => (
           <NativeSelectOption key={s} value={s}>
             {TASK_STATUS_LABEL[s]}

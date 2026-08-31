@@ -14,7 +14,7 @@ export default async function PersonDetailPage({ params, searchParams }: PagePro
   const sp = await searchParams;
   const n = Number(id);
   if (!Number.isInteger(n)) notFound();
-  const showAll = sp.all === "1";
+  const showAll = sp.all !== "0";
   const [person, tasks, companies] = await Promise.all([
     getPersonDetail(n),
     listTasks({ requesterId: n, status: showAll ? "all" : "open" }),
@@ -77,7 +77,7 @@ export default async function PersonDetailPage({ params, searchParams }: PagePro
       <Section
         title="요청한 업무"
         extra={
-          <Link href={showAll ? `/people/${n}` : `/people/${n}?all=1`} className="text-[13px] text-text-3 hover:text-foreground">
+          <Link href={showAll ? `/people/${n}?all=0` : `/people/${n}`} className="text-[13px] text-text-3 hover:text-foreground">
             {showAll ? "진행 중만 보기" : "완료된 것도 보기"}
           </Link>
         }

@@ -16,7 +16,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
   const sp = await searchParams;
   const n = Number(id);
   if (!Number.isInteger(n)) notFound();
-  const showAll = sp.all === "1";
+  const showAll = sp.all !== "0";
   const [project, tasks, companies] = await Promise.all([
     getProjectDetail(n),
     listTasks({ projectId: n, status: showAll ? "all" : "open" }),
@@ -70,7 +70,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
       <Section
         title="업무"
         extra={
-          <Link href={showAll ? `/projects/${n}` : `/projects/${n}?all=1`} className="text-[13px] text-text-3 hover:text-foreground">
+          <Link href={showAll ? `/projects/${n}?all=0` : `/projects/${n}`} className="text-[13px] text-text-3 hover:text-foreground">
             {showAll ? "진행 중만 보기" : "완료된 것도 보기"}
           </Link>
         }

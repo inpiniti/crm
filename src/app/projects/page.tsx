@@ -12,7 +12,7 @@ import { attempt } from "@/lib/attempt";
 
 export default async function ProjectsPage({ searchParams }: PageProps<"/projects">) {
   const sp = await searchParams;
-  const showArchived = sp.archived === "1";
+  const showArchived = sp.archived !== "0";
   const r = await attempt(() => Promise.all([listProjects({ includeArchived: showArchived }), listCompanyOptions()]));
   if (!r.ok) return <SetupNotice error={r.error} />;
   const [projects, companies] = r.value;
@@ -22,7 +22,7 @@ export default async function ProjectsPage({ searchParams }: PageProps<"/project
       <PageHeader
         title="프로젝트"
         description={
-          <Link href={showArchived ? "/projects" : "/projects?archived=1"} className="hover:text-foreground">
+          <Link href={showArchived ? "/projects?archived=0" : "/projects"} className="hover:text-foreground">
             {showArchived ? "보관된 것 숨기기" : "보관된 것도 보기"}
           </Link>
         }

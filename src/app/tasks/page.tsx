@@ -15,7 +15,7 @@ export default async function TasksPage({ searchParams }: PageProps<"/tasks">) {
     return Array.isArray(v) ? v[0] : v;
   };
   const filter: TaskFilter = {
-    status: (one("status") as TaskFilter["status"]) ?? "open",
+    status: (one("status") as TaskFilter["status"]) ?? "all",
     projectId: one("projectId") ? Number(one("projectId")) : undefined,
     requesterId: one("requesterId") ? Number(one("requesterId")) : undefined,
     q: one("q") || undefined,
