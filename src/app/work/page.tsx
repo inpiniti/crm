@@ -8,19 +8,30 @@ import { TASK_STATUS_LABEL } from "@/domain/tasks/task-status";
 import { WORK_KIND_LABEL, formatDuration } from "@/domain/tasks/work";
 import { listWorkByDate, listWorkDates, type WorkTimelineItem } from "@/infrastructure/supabase/repositories/tasks";
 import { attempt } from "@/lib/attempt";
-import { addDays, formatDateTime, todayKst, weekdayKst } from "@/lib/date";
+import { formatDateTime, todayKst, weekdayKst } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
 export default async function WorkPage({ searchParams }: PageProps<"/work">) {
   const sp = await searchParams;
   const raw = Array.isArray(sp.date) ? sp.date[0] : sp.date;
-  const date = raw && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : todayKst();
+  const requested = raw && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : null;
   const today = todayKst();
 
-  const r = await attempt(() => Promise.all([listWorkByDate(date), listWorkDates(90)]));
+  const rd = await attempt(() => listWorkDates(90));
+  if (!rd.ok) return <SetupNotice error={rd.error} />;
+  const dates = rd.value; // 최신순
+  // 날짜를 고르지 않았으면 가장 최근 작업한 날부터 보여준다
+  const date = requested ?? dates[0]?.date ?? today;
+
+  const r = await attempt(() => listWorkByDate(date));
   if (!r.ok) return <SetupNotice error={r.error} />;
-  const [items, dates] = r.value;
+  const items = r.value;
   const totalMin = items.reduce((s, w) => s + (w.durationMin ?? 0), 0);
+
+  // 화살표는 달력 날짜가 아니라 작업이 있는 날 사이를 오간다
+  const prevDate = dates.find((d) => d.date < date)?.date;
+  const newer = dates.filter((d) => d.date > date);
+  const nextDate = newer.at(-1)?.date;
 
   const groups = new Map<string, WorkTimelineItem[]>();
   for (const w of items) {
@@ -35,15 +46,27 @@ export default async function WorkPage({ searchParams }: PageProps<"/work">) {
       <PageHeader
         title={
           <span className="flex items-center gap-2">
-            <Link href={`/work?date=${addDays(date, -1)}`} className={navBtn} aria-label="전날">
-              <ChevronLeft className="size-4" />
-            </Link>
+            {prevDate ? (
+              <Link href={`/work?date=${prevDate}`} className={navBtn} aria-label="이전 작업한 날">
+                <ChevronLeft className="size-4" />
+              </Link>
+            ) : (
+              <span className="inline-flex size-7 items-center justify-center rounded-md text-text-3 opacity-30" aria-hidden>
+                <ChevronLeft className="size-4" />
+              </span>
+            )}
             <span className="num">
               {date} {weekdayKst(date)}요일
             </span>
-            <Link href={`/work?date=${addDays(date, 1)}`} className={navBtn} aria-label="다음날">
-              <ChevronRight className="size-4" />
-            </Link>
+            {nextDate ? (
+              <Link href={`/work?date=${nextDate}`} className={navBtn} aria-label="다음 작업한 날">
+                <ChevronRight className="size-4" />
+              </Link>
+            ) : (
+              <span className="inline-flex size-7 items-center justify-center rounded-md text-text-3 opacity-30" aria-hidden>
+                <ChevronRight className="size-4" />
+              </span>
+            )}
             {date === today && <span className="text-[13px] font-medium text-blue">오늘</span>}
           </span>
         }
