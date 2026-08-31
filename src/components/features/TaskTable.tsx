@@ -2,11 +2,9 @@ import Link from "next/link";
 import { ListTodo } from "lucide-react";
 import { EmptyState } from "@/components/common/Panel";
 import { PriorityBadge, StatusDot, TagChip } from "@/components/common/StatusBadge";
-import { isOverdue } from "@/domain/tasks/task";
 import { TASK_STATUS_LABEL } from "@/domain/tasks/task-status";
 import type { TaskListItem } from "@/infrastructure/supabase/repositories/tasks";
-import { formatShortDate, relativeDay, toDateKst, todayKst } from "@/lib/date";
-import { cn } from "@/lib/utils";
+import { relativeDay } from "@/lib/date";
 
 export function TaskTable({
   tasks,
@@ -22,7 +20,6 @@ export function TaskTable({
   if (tasks.length === 0) {
     return <EmptyState icon={ListTodo} title={empty?.title ?? "아직 업무가 없어요"} description={empty?.description ?? "n 키를 누르면 바로 추가할 수 있어요"} />;
   }
-  const today = todayKst();
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       <table className="w-full text-[13.5px]">
@@ -32,14 +29,11 @@ export function TaskTable({
             <th className="h-9 px-2 font-medium">제목</th>
             {!hideProject && <th className="hidden h-9 px-2 font-medium md:table-cell">프로젝트</th>}
             {!hideRequester && <th className="hidden h-9 px-2 font-medium md:table-cell">요청자</th>}
-            <th className="h-9 px-2 text-right font-medium">마감</th>
-            <th className="hidden h-9 px-4 text-right font-medium sm:table-cell">최근 작업</th>
+            <th className="h-9 px-4 text-right font-medium">최근 작업</th>
           </tr>
         </thead>
         <tbody>
           {tasks.map((t) => {
-            const overdue = isOverdue(t);
-            const dueToday = t.dueAt && toDateKst(t.dueAt) === today;
             return (
               <tr key={t.id} className="row-hover border-b border-border last:border-0">
                 <td className="h-11 whitespace-nowrap px-3 sm:px-4">
@@ -80,10 +74,7 @@ export function TaskTable({
                     )}
                   </td>
                 )}
-                <td className={cn("num h-11 whitespace-nowrap px-2 text-right", overdue ? "font-semibold text-red" : dueToday ? "font-semibold text-blue" : "text-text-2")}>
-                  {t.dueAt ? (overdue ? `${formatShortDate(t.dueAt)} 지남` : relativeDay(t.dueAt)) : <span className="text-text-3">—</span>}
-                </td>
-                <td className="num hidden h-11 whitespace-nowrap px-4 text-right text-text-3 sm:table-cell">{t.lastWorkedAt ? relativeDay(t.lastWorkedAt) : "—"}</td>
+                <td className="num h-11 whitespace-nowrap px-4 text-right text-text-3">{t.lastWorkedAt ? relativeDay(t.lastWorkedAt) : "—"}</td>
               </tr>
             );
           })}
