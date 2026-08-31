@@ -20,7 +20,7 @@ export function PageHeader({
   back?: ReactNode;
 }) {
   return (
-    <div className="mb-6 flex items-end justify-between gap-4">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
       <div className="min-w-0">
         {back && <div className="mb-1.5 text-[13px] text-text-3">{back}</div>}
         <h1 className="text-[22px] font-bold leading-tight tracking-tight">{title}</h1>

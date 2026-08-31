@@ -94,7 +94,7 @@ export function TaskHeader({ task, projects, people }: { task: TaskDetailModel; 
             </ConfirmAction>
           </div>
         </div>
-        <dl className="mt-4 grid grid-cols-[auto_1fr_auto_1fr] gap-x-4 gap-y-1.5 text-[13px]">
+        <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[13px] sm:grid-cols-[auto_1fr_auto_1fr]">
           <dt className="text-text-3">요청자</dt>
           <dd>
             {task.requesterId ? (

@@ -32,7 +32,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
           <Header />
-          <main className="mx-auto w-full max-w-[1120px] px-6 pb-24 pt-8">{children}</main>
+          <main className="mx-auto w-full max-w-[1120px] px-4 pb-24 pt-6 sm:px-6 sm:pt-8">{children}</main>
           <QuickAddTask projects={projects} people={people} />
           <Toaster position="bottom-center" />
         </ThemeProvider>

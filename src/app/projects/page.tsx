@@ -36,28 +36,31 @@ export default async function ProjectsPage({ searchParams }: PageProps<"/project
         <EmptyState icon={FolderKanban} title="아직 프로젝트가 없어요" description="회사 프로젝트든 개인 프로젝트든, 업무를 담을 그릇을 하나 만들어 보세요" />
       ) : (
         <Panel className="divide-y divide-border">
-          <div className="grid grid-cols-[1fr_170px_70px_70px_70px_100px] px-4 text-[12px] text-text-3">
+          <div className="grid grid-cols-[1fr_64px] px-4 text-[12px] text-text-3 sm:grid-cols-[1fr_170px_70px_70px_70px_100px]">
             <div className="h-9 leading-9">프로젝트</div>
-            <div className="h-9 leading-9">기간</div>
+            <div className="hidden h-9 leading-9 sm:block">기간</div>
             <div className="h-9 text-right leading-9">진행 중</div>
-            <div className="h-9 text-right leading-9">완료</div>
-            <div className="h-9 text-right leading-9">전체</div>
-            <div className="h-9 text-right leading-9">소요</div>
+            <div className="hidden h-9 text-right leading-9 sm:block">완료</div>
+            <div className="hidden h-9 text-right leading-9 sm:block">전체</div>
+            <div className="hidden h-9 text-right leading-9 sm:block">소요</div>
           </div>
           {projects.map((p) => (
-            <Link key={p.id} href={`/projects/${p.id}`} className="row-hover grid grid-cols-[1fr_170px_70px_70px_70px_100px] items-center px-4 py-2.5 text-[13.5px]">
+            <Link key={p.id} href={`/projects/${p.id}`} className="row-hover grid grid-cols-[1fr_64px] items-center px-4 py-2.5 text-[13.5px] sm:grid-cols-[1fr_170px_70px_70px_70px_100px]">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 font-medium">
                   <span className="truncate">{p.name}</span>
                   {p.status === "archived" && <Chip className="bg-muted text-text-3">보관</Chip>}
                 </div>
-                <div className="text-[12px] text-text-3">{p.companyName ?? "개인"}</div>
+                <div className="text-[12px] text-text-3">
+                  {p.companyName ?? "개인"}
+                  {p.startedAt && <span className="num sm:hidden"> · {p.startedAt} ~ {p.endedAt ?? ""}</span>}
+                </div>
               </div>
-              <div className="num text-[12.5px] text-text-3">{p.startedAt ? `${p.startedAt} ~ ${p.endedAt ?? ""}` : "—"}</div>
+              <div className="num hidden text-[12.5px] text-text-3 sm:block">{p.startedAt ? `${p.startedAt} ~ ${p.endedAt ?? ""}` : "—"}</div>
               <div className={`num text-right font-semibold ${p.openCount ? "text-blue" : "text-text-3"}`}>{p.openCount}</div>
-              <div className="num text-right text-text-2">{p.doneCount}</div>
-              <div className="num text-right text-text-2">{p.taskCount}</div>
-              <div className="num text-right text-text-3">{p.totalMin > 0 ? formatDuration(p.totalMin) : "—"}</div>
+              <div className="num hidden text-right text-text-2 sm:block">{p.doneCount}</div>
+              <div className="num hidden text-right text-text-2 sm:block">{p.taskCount}</div>
+              <div className="num hidden text-right text-text-3 sm:block">{p.totalMin > 0 ? formatDuration(p.totalMin) : "—"}</div>
             </Link>
           ))}
         </Panel>

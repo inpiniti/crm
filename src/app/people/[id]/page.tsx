@@ -64,7 +64,7 @@ export default async function PersonDetailPage({ params, searchParams }: PagePro
           </Suspense>
         }
       />
-      <Panel className="mb-6 grid grid-cols-3 gap-4 px-5 py-4">
+      <Panel className="mb-6 grid grid-cols-2 gap-4 px-5 py-4 sm:grid-cols-3">
         <Stat label="진행 중" value={person.openCount} suffix="건" tone={person.openCount ? "blue" : "muted"} />
         <Stat label="전체 요청" value={person.taskCount} suffix="건" />
         <Stat label="마지막 요청" value={person.lastRequestedAt ?? "—"} tone={person.lastRequestedAt ? "default" : "muted"} />

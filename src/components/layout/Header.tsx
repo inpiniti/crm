@@ -25,11 +25,11 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center gap-6 px-6">
-        <Link href="/" className="text-[15px] font-bold tracking-tight">
+      <div className="mx-auto flex h-14 w-full max-w-[1120px] items-center gap-2 px-3 sm:gap-6 sm:px-6">
+        <Link href="/" className="hidden text-[15px] font-bold tracking-tight lg:block">
           업무 기록
         </Link>
-        <nav className="flex items-center gap-0.5">
+        <nav className="flex min-w-0 items-center gap-0.5 overflow-x-auto">
           {NAV.map((n) => {
             const active = n.href === "/" ? pathname === "/" : pathname.startsWith(n.href);
             return (
@@ -37,12 +37,12 @@ export function Header() {
                 key={n.href}
                 href={n.href}
                 className={cn(
-                  "flex h-9 items-center gap-1.5 rounded-lg px-3 text-[14px] transition-colors",
+                  "flex h-9 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[14px] transition-colors sm:px-3",
                   active ? "bg-accent font-semibold text-foreground" : "text-text-2 hover:bg-hover hover:text-foreground",
                 )}
               >
                 <n.icon className="size-4" />
-                {n.label}
+                <span className="hidden md:inline">{n.label}</span>
               </Link>
             );
           })}
@@ -51,8 +51,8 @@ export function Header() {
           <Tooltip>
             <TooltipTrigger render={<Button variant="ghost" size="sm" onClick={() => router.push("/tasks?focus=1")} />}>
               <Search />
-              검색
-              <Kbd>/</Kbd>
+              <span className="hidden sm:inline">검색</span>
+              <Kbd className="hidden sm:inline-flex">/</Kbd>
             </TooltipTrigger>
             <TooltipContent>업무 검색</TooltipContent>
           </Tooltip>
@@ -61,8 +61,8 @@ export function Header() {
               render={<Button variant="ghost" size="sm" onClick={() => window.dispatchEvent(new CustomEvent("quick-add"))} />}
             >
               <Plus />
-              새 업무
-              <Kbd>n</Kbd>
+              <span className="hidden sm:inline">새 업무</span>
+              <Kbd className="hidden sm:inline-flex">n</Kbd>
             </TooltipTrigger>
             <TooltipContent>어느 화면에서든 n</TooltipContent>
           </Tooltip>

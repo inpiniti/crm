@@ -17,7 +17,7 @@ export default async function TaskDetailPage({ params }: PageProps<"/tasks/[id]"
   return (
     <>
       <TaskHeader task={task} projects={projects} people={people} />
-      <div className="grid grid-cols-[1fr_340px] gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
         <Section title="작업 기록">
           <WorkTimeline taskId={task.id} status={task.status} work={task.work} />
         </Section>

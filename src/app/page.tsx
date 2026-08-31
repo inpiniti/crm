@@ -33,7 +33,7 @@ export default async function DashboardPage() {
     <>
       <PageHeader title={`${today} ${weekdayKst(today)}요일`} description="오늘 챙길 것부터" />
 
-      <Panel className="mb-8 grid grid-cols-4 gap-4 px-5 py-4">
+      <Panel className="mb-8 grid grid-cols-2 gap-4 px-5 py-4 sm:grid-cols-4">
         <Stat label="지연" value={overdue.length} suffix="건" tone={overdue.length ? "red" : "muted"} />
         <Stat label="오늘 마감" value={dueToday.length} suffix="건" tone={dueToday.length ? "blue" : "muted"} />
         <Stat label="진행 중" value={doing.length} suffix="건" />

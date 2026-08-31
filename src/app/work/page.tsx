@@ -56,7 +56,7 @@ export default async function WorkPage({ searchParams }: PageProps<"/work">) {
           )
         }
       />
-      <div className="grid grid-cols-[1fr_200px] gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_200px]">
         <div className="space-y-6">
           {items.length === 0 && <EmptyState icon={Clock} title="이 날은 기록된 작업이 없어요" description="업무 상세에서 한 일을 적으면 여기에 모여요" />}
           {[...groups.entries()].map(([name, list]) => (

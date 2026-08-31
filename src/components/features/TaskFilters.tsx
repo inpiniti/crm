@@ -54,8 +54,8 @@ export function TaskFilters({
   };
 
   return (
-    <div className="mb-3 grid grid-cols-[1.5fr_1fr_1fr_1fr_0.8fr] gap-2">
-      <div className="relative">
+    <div className="mb-3 grid grid-cols-2 gap-2 md:grid-cols-[1.5fr_1fr_1fr_1fr_0.8fr]">
+      <div className="relative col-span-2 md:col-span-1">
         <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-text-3" />
         <Input ref={searchRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="제목·내용 검색" className="pl-8" />
       </div>

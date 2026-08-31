@@ -49,7 +49,7 @@ export default async function CompanyDetailPage({ params }: PageProps<"/companie
           <Markdown>{company.memo}</Markdown>
         </Panel>
       )}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Section title="프로젝트">
           {projects.length === 0 ? (
             <EmptyState icon={FolderKanban} title="프로젝트가 없어요" />

@@ -56,7 +56,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
           </Suspense>
         }
       />
-      <Panel className="mb-6 grid grid-cols-4 gap-4 px-5 py-4">
+      <Panel className="mb-6 grid grid-cols-2 gap-4 px-5 py-4 sm:grid-cols-4">
         <Stat label="진행 중" value={project.openCount} suffix="건" tone={project.openCount ? "blue" : "muted"} />
         <Stat label="완료" value={project.doneCount} suffix="건" />
         <Stat label="전체" value={project.taskCount} suffix="건" />
