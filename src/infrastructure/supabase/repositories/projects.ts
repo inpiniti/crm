@@ -79,11 +79,14 @@ export async function listProjects(opts: { includeArchived?: boolean; companyId?
       };
     })
     .sort((a, b) => {
-      // 회사 프로젝트 → 개인 프로젝트, 각각 이름순. archived 는 뒤로
+      // 기간순: 시작일 최신 프로젝트가 먼저, 시작일 없는 것은 뒤로. archived 는 맨 뒤
       if (a.status !== b.status) return a.status === "active" ? -1 : 1;
-      const ac = a.companyName ?? "￿";
-      const bc = b.companyName ?? "￿";
-      return ac.localeCompare(bc, "ko") || a.name.localeCompare(b.name, "ko");
+      if (a.startedAt !== b.startedAt) {
+        if (!a.startedAt) return 1;
+        if (!b.startedAt) return -1;
+        return b.startedAt.localeCompare(a.startedAt);
+      }
+      return a.name.localeCompare(b.name, "ko");
     });
 }
 
