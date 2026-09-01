@@ -97,7 +97,10 @@ export function QuickAddTask({ projects, people }: { projects: ComboOption[]; pe
                 <Combobox name="requesterId" options={people} value={null} nullLabel="내가 직접" />
               </Field>
             </FormRow>
-            <FormRow>
+            <FormRow cols={3}>
+              <Field label="시작일">
+                <Input type="date" name="startedAt" />
+              </Field>
               <Field label="마감">
                 <Input type="datetime-local" name="dueAt" />
               </Field>

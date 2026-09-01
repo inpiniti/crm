@@ -56,6 +56,7 @@ export interface TaskRow {
   status: TaskStatus;
   priority: TaskPriority;
   requested_at: string | null;
+  started_at: string | null;
   due_at: string | null;
   completed_at: string | null;
   status_changed_at: string | null;
@@ -163,6 +164,7 @@ export const toTask = (r: TaskRow): Task => ({
   status: r.status,
   priority: r.priority,
   requestedAt: r.requested_at,
+  startedAt: r.started_at,
   dueAt: r.due_at,
   completedAt: r.completed_at,
   statusChangedAt: r.status_changed_at,
@@ -179,6 +181,7 @@ export const fromTaskInput = (i: TaskInput) => ({
   body: i.body,
   priority: i.priority,
   requested_at: i.requestedAt,
+  started_at: i.startedAt,
   due_at: i.dueAt,
   source: i.source,
   tags: i.tags,

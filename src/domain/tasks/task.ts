@@ -19,6 +19,7 @@ export interface Task extends Auditable {
   status: TaskStatus;
   priority: TaskPriority;
   requestedAt: DateOnly | null;
+  startedAt: DateOnly | null;
   dueAt: Timestamp | null;
   completedAt: Timestamp | null;
   statusChangedAt: Timestamp | null;
@@ -33,6 +34,7 @@ export interface TaskInput {
   body: string | null;
   priority: TaskPriority;
   requestedAt: DateOnly | null;
+  startedAt: DateOnly | null;
   dueAt: Timestamp | null;
   source: string | null;
   tags: string[];

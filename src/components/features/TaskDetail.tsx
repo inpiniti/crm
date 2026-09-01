@@ -108,6 +108,8 @@ export function TaskHeader({ task, projects, people }: { task: TaskDetailModel; 
           </dd>
           <dt className="text-text-3">요청일</dt>
           <dd className="num text-text-2">{task.requestedAt ?? "—"}</dd>
+          <dt className="text-text-3">시작일</dt>
+          <dd className="num text-text-2">{task.startedAt ?? "—"}</dd>
           <dt className="text-text-3">마감</dt>
           <dd className={cn("num", overdue ? "font-semibold text-red" : "text-text-2")}>
             {task.dueAt ? `${formatDateTime(task.dueAt)} · ${relativeDay(task.dueAt)}` : "—"}
@@ -154,9 +156,14 @@ export function TaskHeader({ task, projects, people }: { task: TaskDetailModel; 
               <Field label="요청일">
                 <Input type="date" name="requestedAt" defaultValue={task.requestedAt ?? ""} />
               </Field>
+              <Field label="시작일">
+                <Input type="date" name="startedAt" defaultValue={task.startedAt ?? ""} />
+              </Field>
               <Field label="마감">
                 <Input type="datetime-local" name="dueAt" defaultValue={toDateTimeLocal(task.dueAt)} />
               </Field>
+            </FormRow>
+            <FormRow cols={3}>
               <Field label="우선순위">
                 <NativeSelect className="w-full" name="priority" defaultValue={task.priority}>
                   {TASK_PRIORITIES.map((p) => (
@@ -166,8 +173,6 @@ export function TaskHeader({ task, projects, people }: { task: TaskDetailModel; 
                   ))}
                 </NativeSelect>
               </Field>
-            </FormRow>
-            <FormRow>
               <Field label="요청 경로" hint="구두, 메신저, 메일, 회의 …">
                 <Input name="source" defaultValue={task.source ?? ""} />
               </Field>

@@ -85,6 +85,7 @@ CREATE TABLE tasks (
   priority           text NOT NULL DEFAULT 'normal'
                      CHECK (priority IN ('low', 'normal', 'high')),
   requested_at       date DEFAULT CURRENT_DATE,
+  started_at         date,                              -- 0007
   due_at             timestamptz,
   completed_at       timestamptz,
   status_changed_at  timestamptz,

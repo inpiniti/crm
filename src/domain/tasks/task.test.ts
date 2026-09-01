@@ -8,6 +8,7 @@ const base = {
   body: null,
   priority: "normal" as const,
   requestedAt: null,
+  startedAt: null,
   dueAt: null,
   source: null,
   tags: [],
