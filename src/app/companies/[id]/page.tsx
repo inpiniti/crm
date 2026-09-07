@@ -59,7 +59,7 @@ export default async function CompanyDetailPage({ params }: PageProps<"/companie
                 <Link key={p.id} href={`/projects/${p.id}`} className="row-hover flex h-11 items-center justify-between px-4 text-[13.5px]">
                   <span className="flex items-center gap-2 font-medium">
                     {p.name}
-                    {p.status === "archived" && <Chip className="bg-muted text-text-3">보관</Chip>}
+                    {p.status === "archived" && <Chip className="bg-muted text-text-3">종료</Chip>}
                   </span>
                   <span className="num text-[13px] text-text-3">
                     <b className={p.openCount ? "text-blue" : ""}>{p.openCount}</b> / {p.taskCount}

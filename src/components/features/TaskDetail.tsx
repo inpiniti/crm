@@ -141,7 +141,7 @@ export function TaskHeader({ task, projects, people }: { task: TaskDetailModel; 
               <Input name="title" defaultValue={task.title} required autoFocus />
             </Field>
             <FormRow>
-              <Field label="프로젝트" hint={task.projectStatus === "archived" ? "보관된 프로젝트예요. 다른 곳으로 옮길 수 있어요." : undefined}>
+              <Field label="프로젝트" hint={task.projectStatus === "archived" ? "종료된 프로젝트예요. 다른 곳으로 옮길 수 있어요." : undefined}>
                 <Combobox
                   name="projectId"
                   options={projects.some((p) => p.id === task.projectId) ? projects : [{ id: task.projectId, label: task.projectName }, ...projects]}

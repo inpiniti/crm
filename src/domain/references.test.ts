@@ -9,7 +9,7 @@ describe("참조가 있으면 삭제 불가", () => {
     expect(() => assertCompanyDeletable({ projectCount: 0, personCount: 0 })).not.toThrow();
   });
   it("project", () => {
-    expect(() => assertProjectDeletable({ taskCount: 2 })).toThrow(/보관/);
+    expect(() => assertProjectDeletable({ taskCount: 2 })).toThrow(/종료/);
   });
   it("person", () => {
     expect(() => assertPersonDeletable({ taskCount: 1 })).toThrow();
@@ -18,7 +18,7 @@ describe("참조가 있으면 삭제 불가", () => {
 
 describe("project", () => {
   it("archived 프로젝트는 업무를 받지 않는다", () => {
-    expect(() => assertProjectAcceptsTasks({ status: "archived", name: "X" })).toThrow(/보관된/);
+    expect(() => assertProjectAcceptsTasks({ status: "archived", name: "X" })).toThrow(/종료된/);
     expect(() => assertProjectAcceptsTasks({ status: "active", name: "X" })).not.toThrow();
   });
   it("기간 검증", () => {

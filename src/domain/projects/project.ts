@@ -40,7 +40,7 @@ export function assertProjectAcceptsTasks(p: Pick<Project, "status" | "name">) {
   if (p.status === "archived") {
     throw new DomainError(
       "project.archived",
-      `'${p.name}'은(는) 보관된 프로젝트예요. 보관을 해제하면 업무를 넣을 수 있어요.`,
+      `'${p.name}'은(는) 종료된 프로젝트예요. 다시 진행 중으로 변경하면 업무를 넣을 수 있어요.`,
     );
   }
 }
@@ -50,7 +50,7 @@ export function assertProjectDeletable(refs: { taskCount: number }) {
   if (refs.taskCount > 0) {
     throw new DomainError(
       "project.has_refs",
-      "업무가 있는 프로젝트는 지울 수 없어요. 대신 보관해 주세요.",
+      "업무가 있는 프로젝트는 지울 수 없어요. 대신 종료 처리해 주세요.",
     );
   }
 }

@@ -45,7 +45,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
         title={
           <span className="inline-flex items-center gap-2">
             {project.name}
-            {project.status === "archived" && <Chip className="bg-muted text-text-3">보관</Chip>}
+            {project.status === "archived" && <Chip className="bg-muted text-text-3">종료</Chip>}
           </span>
         }
         description={project.startedAt ? <span className="num">{project.startedAt} ~ {project.endedAt ?? ""}</span> : undefined}
@@ -78,7 +78,7 @@ export default async function ProjectDetailPage({ params, searchParams }: PagePr
         <TaskTable
           tasks={tasks}
           hideProject
-          empty={{ title: "이 프로젝트에 업무가 없어요", description: project.status === "archived" ? "보관된 프로젝트예요" : "n 키로 바로 추가할 수 있어요" }}
+          empty={{ title: "이 프로젝트에 업무가 없어요", description: project.status === "archived" ? "종료된 프로젝트예요" : "n 키로 바로 추가할 수 있어요" }}
         />
       </Section>
     </>

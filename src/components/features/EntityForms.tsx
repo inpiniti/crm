@@ -182,13 +182,13 @@ export function ProjectStatusButtons({ project }: { project: Project }) {
         onClick={async () => {
           const r = await setProjectStatus(project.id, archived ? "active" : "archived");
           if (r.ok) {
-            toast.success(archived ? "보관을 해제했어요" : "보관했어요");
+            toast.success(archived ? "프로젝트를 다시 진행 상태로 변경했어요" : "프로젝트를 종료 처리했어요");
             router.refresh();
           } else toast.error(r.error);
         }}
       >
         {archived ? <ArchiveRestore /> : <Archive />}
-        {archived ? "보관 해제" : "보관"}
+        {archived ? "재개" : "종료"}
       </Button>
       <ConfirmAction action={() => deleteProject(project.id)} title="이 프로젝트를 지울까요?" successMessage="프로젝트를 지웠어요" size="icon-sm" className={deleteBtn}>
         <Trash2 />

@@ -23,7 +23,7 @@ export default async function ProjectsPage({ searchParams }: PageProps<"/project
         title="프로젝트"
         description={
           <Link href={showArchived ? "/projects?archived=0" : "/projects"} className="hover:text-foreground">
-            {showArchived ? "보관된 것 숨기기" : "보관된 것도 보기"}
+            {showArchived ? "종료된 것 숨기기" : "종료된 것도 보기"}
           </Link>
         }
         actions={
@@ -49,7 +49,7 @@ export default async function ProjectsPage({ searchParams }: PageProps<"/project
               <div className="min-w-0">
                 <div className="flex items-center gap-2 font-medium">
                   <span className="truncate">{p.name}</span>
-                  {p.status === "archived" && <Chip className="bg-muted text-text-3">보관</Chip>}
+                  {p.status === "archived" && <Chip className="bg-muted text-text-3">종료</Chip>}
                 </div>
                 <div className="text-[12px] text-text-3">
                   {p.companyName ?? "개인"}
