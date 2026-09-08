@@ -6,8 +6,9 @@ import { Panel, Section } from "@/components/common/Panel";
 import { listPersonOptions } from "@/infrastructure/supabase/repositories/people";
 import { listProjectOptions } from "@/infrastructure/supabase/repositories/projects";
 import { getTaskDetail } from "@/infrastructure/supabase/repositories/tasks";
+import { DetailHeaderSetter } from "@/components/layout/DetailHeaderContext";
 
-export default async function TaskDetailPage({ params }: PageProps<"/tasks/[id]">) {
+export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const n = Number(id);
   if (!Number.isInteger(n)) notFound();
@@ -15,7 +16,8 @@ export default async function TaskDetailPage({ params }: PageProps<"/tasks/[id]"
   if (!task) notFound();
 
   return (
-    <>
+    <div className="mx-auto max-w-5xl p-6 sm:p-8 space-y-7">
+      <DetailHeaderSetter title={task.title} subtitle={task.projectName} />
       <TaskHeader task={task} projects={projects} people={people} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
         <Section title="작업 기록">
@@ -34,6 +36,7 @@ export default async function TaskDetailPage({ params }: PageProps<"/tasks/[id]"
           </Section>
         </div>
       </div>
-    </>
+    </div>
   );
 }
+

@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { TaskTable } from "@/components/features/TaskTable";
 import { Markdown } from "@/components/common/Markdown";
 import { PageHeader, Panel, Section, Stat } from "@/components/common/Panel";
+import { DetailTopBar } from "@/components/layout/DetailTopBar";
 import { SetupNotice } from "@/components/layout/SetupNotice";
 import { formatDuration } from "@/domain/tasks/work";
 import { listTasks, listWorkByDate, listWorkDates } from "@/infrastructure/supabase/repositories/tasks";
@@ -31,14 +32,17 @@ export default async function DashboardPage() {
   const workLabel = lastWorkDate === today ? "오늘 한 일" : "최근 한 일";
 
   return (
-    <>
-      <PageHeader title={`${today} ${weekdayKst(today)}요일`} description="오늘 챙길 것부터" />
+    <div className="h-full w-full flex flex-col overflow-hidden bg-background">
+      <DetailTopBar moduleName="대시보드" subtitle={`${today} (${weekdayKst(today)})`} />
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-5xl p-6 sm:p-8 space-y-8">
+        <PageHeader title={`${today} ${weekdayKst(today)}요일`} description="오늘 챙길 것부터" />
 
-      <Panel className="mb-8 grid grid-cols-2 gap-4 px-5 py-4 sm:grid-cols-3">
-        <Stat label="지연" value={overdue.length} suffix="건" tone={overdue.length ? "red" : "muted"} />
-        <Stat label="진행 중" value={doing.length} suffix="건" />
-        <Stat label={workLabel} value={recentMin ? formatDuration(recentMin) : recentWork.length} suffix={recentMin ? undefined : "건"} />
-      </Panel>
+        <Panel className="grid grid-cols-2 gap-4 px-5 py-4 sm:grid-cols-3">
+          <Stat label="지연" value={overdue.length} suffix="건" tone={overdue.length ? "red" : "muted"} />
+          <Stat label="진행 중" value={doing.length} suffix="건" />
+          <Stat label={workLabel} value={recentMin ? formatDuration(recentMin) : recentWork.length} suffix={recentMin ? undefined : "건"} />
+        </Panel>
 
       <div className="space-y-8">
         {overdue.length > 0 && (
@@ -81,10 +85,13 @@ export default async function DashboardPage() {
             </Panel>
           </Section>
         )}
+        </div>
       </div>
-    </>
+    </div>
+  </div>
   );
 }
+
 
 function MoreLink({ href, label = "전체 보기" }: { href: string; label?: string }) {
   return (

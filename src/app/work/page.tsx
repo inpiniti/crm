@@ -1,26 +1,32 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { Markdown } from "@/components/common/Markdown";
-import { EmptyState, PageHeader, Panel } from "@/components/common/Panel";
+import { EmptyState, Panel } from "@/components/common/Panel";
 import { Chip, StatusDot } from "@/components/common/StatusBadge";
 import { SetupNotice } from "@/components/layout/SetupNotice";
+import { WorkDateNav } from "@/components/features/WorkDateNav";
+import { DetailTopBar } from "@/components/layout/DetailTopBar";
+import { DetailHeaderSetter } from "@/components/layout/DetailHeaderContext";
 import { TASK_STATUS_LABEL } from "@/domain/tasks/task-status";
 import { WORK_KIND_LABEL, formatDuration } from "@/domain/tasks/work";
-import { listWorkByDate, listWorkDates, type WorkTimelineItem } from "@/infrastructure/supabase/repositories/tasks";
+import { listWorkByDate, listWorkDates, listTaskOptions, type WorkTimelineItem } from "@/infrastructure/supabase/repositories/tasks";
 import { attempt } from "@/lib/attempt";
 import { formatDateTime, todayKst, weekdayKst } from "@/lib/date";
-import { cn } from "@/lib/utils";
 
-export default async function WorkPage({ searchParams }: PageProps<"/work">) {
+export default async function WorkPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
   const raw = Array.isArray(sp.date) ? sp.date[0] : sp.date;
   const requested = raw && /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : null;
   const today = todayKst();
 
-  const rd = await attempt(() => listWorkDates(90));
+  // 날짜 제한 없이 모든 작업일 조회 & 작업 추가용 업무 옵션 조회
+  const [rd, ro] = await Promise.all([
+    attempt(() => listWorkDates()),
+    attempt(() => listTaskOptions()),
+  ]);
   if (!rd.ok) return <SetupNotice error={rd.error} />;
   const dates = rd.value; // 최신순
-  // 날짜를 고르지 않았으면 가장 최근 작업한 날부터 보여준다
+  const taskOptions = ro.ok ? ro.value : [];
   const date = requested ?? dates[0]?.date ?? today;
 
   const r = await attempt(() => listWorkByDate(date));
@@ -28,7 +34,7 @@ export default async function WorkPage({ searchParams }: PageProps<"/work">) {
   const items = r.value;
   const totalMin = items.reduce((s, w) => s + (w.durationMin ?? 0), 0);
 
-  // 화살표는 달력 날짜가 아니라 작업이 있는 날 사이를 오간다
+  // 이전/다음 작업일
   const prevDate = dates.find((d) => d.date < date)?.date;
   const newer = dates.filter((d) => d.date > date);
   const nextDate = newer.at(-1)?.date;
@@ -39,96 +45,102 @@ export default async function WorkPage({ searchParams }: PageProps<"/work">) {
     groups.set(key, [...(groups.get(key) ?? []), w]);
   }
 
-  const navBtn = "inline-flex size-7 items-center justify-center rounded-md text-text-3 transition-colors hover:bg-accent hover:text-foreground";
+  const navBtn = "inline-flex size-7 items-center justify-center rounded-md text-text-3 transition-colors hover:bg-muted hover:text-foreground";
 
   return (
-    <>
-      <PageHeader
-        title={
-          <span className="flex items-center gap-2">
-            {prevDate ? (
-              <Link href={`/work?date=${prevDate}`} className={navBtn} aria-label="이전 작업한 날">
-                <ChevronLeft className="size-4" />
-              </Link>
-            ) : (
-              <span className="inline-flex size-7 items-center justify-center rounded-md text-text-3 opacity-30" aria-hidden>
-                <ChevronLeft className="size-4" />
-              </span>
-            )}
-            <span className="num">
-              {date} {weekdayKst(date)}요일
-            </span>
-            {nextDate ? (
-              <Link href={`/work?date=${nextDate}`} className={navBtn} aria-label="다음 작업한 날">
-                <ChevronRight className="size-4" />
-              </Link>
-            ) : (
-              <span className="inline-flex size-7 items-center justify-center rounded-md text-text-3 opacity-30" aria-hidden>
-                <ChevronRight className="size-4" />
-              </span>
-            )}
-            {date === today && <span className="text-[13px] font-medium text-blue">오늘</span>}
-          </span>
-        }
-        description={items.length ? <span className="num">{items.length}건{totalMin ? ` · ${formatDuration(totalMin)}` : ""}</span> : undefined}
-        actions={
-          date !== today && (
-            <Link href="/work" className="text-[13px] text-text-2 hover:text-foreground">
-              오늘로
-            </Link>
-          )
-        }
-      />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_200px]">
-        <div className="space-y-6">
-          {items.length === 0 && <EmptyState icon={Clock} title="이 날은 기록된 작업이 없어요" description="업무 상세에서 한 일을 적으면 여기에 모여요" />}
-          {[...groups.entries()].map(([name, list]) => (
-            <section key={name}>
-              <h2 className="mb-2 text-[14px] font-bold">{name}</h2>
-              <Panel className="divide-y divide-border">
-                {list.map((w) => (
-                  <div key={w.id} className="px-4 py-3">
-                    <div className="mb-1 flex items-center gap-2 text-[12px] text-text-3">
-                      <span className="num font-medium text-text-2">{formatDateTime(w.workedAt).slice(11)}</span>
-                      <Link href={`/tasks/${w.taskId}`} className="font-medium text-foreground hover:text-blue">
-                        {w.taskTitle}
-                      </Link>
-                      <span className="inline-flex items-center gap-1">
-                        <StatusDot status={w.taskStatus} />
-                        {TASK_STATUS_LABEL[w.taskStatus]}
-                      </span>
-                      {w.kind && <Chip className="bg-blue-weak text-blue">{WORK_KIND_LABEL[w.kind]}</Chip>}
-                      {w.durationMin ? <span className="num ml-auto">{formatDuration(w.durationMin)}</span> : null}
-                    </div>
-                    <Markdown className="text-[13px]">{w.body}</Markdown>
-                  </div>
-                ))}
-              </Panel>
-            </section>
-          ))}
-        </div>
-        <aside>
-          <div className="mb-2 text-[12px] font-medium text-text-3">최근 작업한 날</div>
-          <div className="flex flex-col gap-0.5">
-            {dates.length === 0 && <div className="text-[13px] text-text-3">아직 없어요</div>}
-            {dates.map((d) => (
-              <Link
-                key={d.date}
-                href={`/work?date=${d.date}`}
-                className={cn(
-                  "num flex items-center justify-between rounded-md px-2.5 py-1.5 text-[13px] transition-colors",
-                  d.date === date ? "bg-accent font-semibold text-foreground" : "text-text-2 hover:bg-hover",
+    <div className="flex h-full w-full min-w-0 overflow-hidden">
+      <DetailHeaderSetter title={`${date} (${weekdayKst(date)})`} subtitle={items.length > 0 ? `${items.length}건 기록` : "기록 없음"} />
+      {/* 2열: 작업한 날짜 탐색기 및 달력 */}
+      <WorkDateNav dates={dates} currentDate={date} today={today} taskOptions={taskOptions} />
+
+      {/* 3열: 해당 날짜 작업 타임라인 */}
+      <section className="flex-1 h-full min-w-0 flex flex-col overflow-hidden bg-background">
+        <DetailTopBar moduleName="작업" subtitle={date} />
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-4xl p-6 sm:p-8 space-y-7">
+          {/* 상단 날짜 및 요약 바 */}
+          <div className="flex items-center justify-between border-b border-border/80 pb-5">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                {prevDate ? (
+                  <Link href={`/work?date=${prevDate}`} className={navBtn} aria-label="이전 작업일">
+                    <ChevronLeft className="size-4" />
+                  </Link>
+                ) : (
+                  <span className="inline-flex size-7 items-center justify-center rounded-md text-text-3 opacity-25" aria-hidden>
+                    <ChevronLeft className="size-4" />
+                  </span>
                 )}
-              >
-                <span>
-                  {d.date.slice(5)} {weekdayKst(d.date)}
-                </span>
-                <span className="text-[12px] text-text-3">{d.count}</span>
-              </Link>
-            ))}
+                {nextDate ? (
+                  <Link href={`/work?date=${nextDate}`} className={navBtn} aria-label="다음 작업일">
+                    <ChevronRight className="size-4" />
+                  </Link>
+                ) : (
+                  <span className="inline-flex size-7 items-center justify-center rounded-md text-text-3 opacity-25" aria-hidden>
+                    <ChevronRight className="size-4" />
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="num text-2xl font-bold tracking-tight text-foreground">
+                    {date} <span className="font-semibold text-lg text-text-2">{weekdayKst(date)}요일</span>
+                  </h1>
+                  {date === today && (
+                    <span className="rounded-md bg-blue-weak px-2 py-0.5 text-[12px] font-semibold text-blue">
+                      오늘
+                    </span>
+                  )}
+                </div>
+                {items.length > 0 && (
+                  <div className="num mt-1 text-[13px] text-text-3">
+                    총 {items.length}건{totalMin > 0 ? ` · ${formatDuration(totalMin)}` : ""}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </aside>
+
+          {/* 작업 목록 */}
+          {items.length === 0 ? (
+            <EmptyState
+              icon={Clock}
+              title="이 날은 기록된 작업이 없어요"
+              description="업무 상세에서 한 일을 적으면 여기에 모여요"
+            />
+          ) : (
+            <div className="space-y-6">
+              {[...groups.entries()].map(([name, list]) => (
+                <section key={name} className="space-y-2.5">
+                  <h2 className="text-[13.5px] font-bold text-foreground px-1">{name}</h2>
+                  <Panel className="divide-y divide-border overflow-hidden">
+                    {list.map((w) => (
+                      <div key={w.id} className="p-4 space-y-2 hover:bg-muted/20 transition-colors">
+                        <div className="flex items-center gap-2.5 text-[12px] text-text-3">
+                          <span className="num font-semibold text-text-2">{formatDateTime(w.workedAt).slice(11)}</span>
+                          <Link href={`/tasks/${w.taskId}`} className="font-medium text-foreground hover:text-blue hover:underline transition-colors">
+                            {w.taskTitle}
+                          </Link>
+                          <span className="inline-flex items-center gap-1">
+                            <StatusDot status={w.taskStatus} />
+                            <span>{TASK_STATUS_LABEL[w.taskStatus]}</span>
+                          </span>
+                          {w.kind && <Chip className="bg-blue-weak text-blue text-[11px]">{WORK_KIND_LABEL[w.kind]}</Chip>}
+                          {w.durationMin ? <span className="num ml-auto font-medium text-text-2">{formatDuration(w.durationMin)}</span> : null}
+                        </div>
+                        <Markdown className="text-[13px] leading-relaxed text-foreground/90 pl-0.5">{w.body}</Markdown>
+                      </div>
+                    ))}
+                  </Panel>
+                </section>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </>
-  );
+    </section>
+  </div>
+);
 }
+

@@ -85,7 +85,6 @@ CREATE TABLE tasks (
   priority           text NOT NULL DEFAULT 'normal'
                      CHECK (priority IN ('low', 'normal', 'high')),
   requested_at       date DEFAULT CURRENT_DATE,
-  started_at         date,                              -- 0007
   due_at             timestamptz,
   completed_at       timestamptz,
   status_changed_at  timestamptz,
@@ -203,3 +202,7 @@ ALTER TABLE attachments ENABLE ROW LEVEL SECURITY;
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('attachments', 'attachments', false)
 ON CONFLICT (id) DO NOTHING;
+
+-- ===== 0007_task_started_at.sql =====
+-- 업무 시작일 (마감일과 별개로, 실제 일을 시작한/시작할 날짜)
+ALTER TABLE tasks ADD COLUMN started_at date;

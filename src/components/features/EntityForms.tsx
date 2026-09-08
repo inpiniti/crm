@@ -7,6 +7,7 @@ import { Archive, ArchiveRestore, Pencil, Plus, Trash2 } from "lucide-react";
 import { createCompanyAction, deleteCompany, updateCompanyAction } from "@/app/actions/companies";
 import { createPersonAction, deletePerson, updatePersonAction } from "@/app/actions/people";
 import { createProjectAction, deleteProject, setProjectStatus, updateProjectAction } from "@/app/actions/projects";
+import { addWorkAction } from "@/app/actions/work";
 import { ActionForm, ConfirmAction, SubmitButton } from "@/components/common/ActionForm";
 import { Combobox, type ComboOption } from "@/components/common/Combobox";
 import { Field, FormRow } from "@/components/common/Field";
@@ -18,6 +19,8 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { COMPANY_TYPES, COMPANY_TYPE_LABEL, type Company } from "@/domain/companies/company";
 import type { Person } from "@/domain/people/person";
 import type { Project } from "@/domain/projects/project";
+import { WORK_KINDS, WORK_KIND_LABEL } from "@/domain/tasks/work";
+import { nowDateTimeLocal } from "@/lib/date";
 
 function useOpenFromQuery() {
   const sp = useSearchParams();
@@ -263,3 +266,117 @@ export function PersonDeleteButton({ id }: { id: number }) {
     </ConfirmAction>
   );
 }
+
+// ---------- Task ----------
+
+export function TaskFormButton() {
+  return (
+    <Button
+      size="sm"
+      onClick={() => window.dispatchEvent(new CustomEvent("quick-add"))}
+      className="cursor-pointer"
+    >
+      <Plus />
+      업무 추가
+    </Button>
+  );
+}
+
+// ---------- Work ----------
+
+export function WorkFormButton({
+  taskOptions,
+  defaultDate,
+  defaultTaskId,
+}: {
+  taskOptions?: ComboOption[];
+  defaultDate?: string;
+  defaultTaskId?: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  // default workedAt timestamp
+  const defaultWorkedAt = defaultDate
+    ? `${defaultDate}T12:00`
+    : nowDateTimeLocal();
+
+  return (
+    <>
+      <Trigger editing={false} label="작업 추가" onClick={() => setOpen(true)} />
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[540px]">
+          <DialogHeader>
+            <DialogTitle>새 작업 기록</DialogTitle>
+          </DialogHeader>
+          <ActionForm
+            action={addWorkAction}
+            successMessage="작업을 기록했어요"
+            onSuccess={() => {
+              setOpen(false);
+              router.refresh();
+            }}
+            className="space-y-4"
+          >
+            {taskOptions && taskOptions.length > 0 ? (
+              <Field label="대상 업무">
+                <Combobox
+                  name="taskId"
+                  options={taskOptions}
+                  value={defaultTaskId ?? taskOptions[0]?.id ?? null}
+                  placeholder="어느 업무에 대한 작업인가요?"
+                />
+              </Field>
+            ) : (
+              <input type="hidden" name="taskId" value={defaultTaskId ?? ""} />
+            )}
+
+            <FormRow>
+              <Field label="작업 일시">
+                <Input
+                  type="datetime-local"
+                  name="workedAt"
+                  defaultValue={defaultWorkedAt}
+                  required
+                />
+              </Field>
+              <Field label="소요 시간">
+                <Input
+                  type="number"
+                  name="durationMin"
+                  placeholder="분 단위 (예: 30, 60)"
+                  min={0}
+                />
+              </Field>
+            </FormRow>
+
+            <FormRow>
+              <Field label="작업 유형">
+                <NativeSelect name="kind" className="w-full">
+                  <NativeSelectOption value="">선택 안 함</NativeSelectOption>
+                  {WORK_KINDS.map((k) => (
+                    <NativeSelectOption key={k} value={k}>
+                      {WORK_KIND_LABEL[k]}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              </Field>
+            </FormRow>
+
+            <Field label="작업 내용" hint="진행한 내용, 완료된 사항 등">
+              <MarkdownEditor
+                name="body"
+                defaultValue=""
+                placeholder="어떤 작업을 진행했나요? (마크다운 지원)"
+                rows={5}
+              />
+            </Field>
+
+            <Footer onClose={() => setOpen(false)} label="기록하기" />
+          </ActionForm>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+

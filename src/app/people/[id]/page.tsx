@@ -8,8 +8,9 @@ import { PageHeader, Panel, Section, Stat } from "@/components/common/Panel";
 import { listCompanyOptions } from "@/infrastructure/supabase/repositories/companies";
 import { getPersonDetail } from "@/infrastructure/supabase/repositories/people";
 import { listTasks } from "@/infrastructure/supabase/repositories/tasks";
+import { DetailHeaderSetter } from "@/components/layout/DetailHeaderContext";
 
-export default async function PersonDetailPage({ params, searchParams }: PageProps<"/people/[id]">) {
+export default async function PersonDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ all?: string }> }) {
   const { id } = await params;
   const sp = await searchParams;
   const n = Number(id);
@@ -23,47 +24,45 @@ export default async function PersonDetailPage({ params, searchParams }: PagePro
   if (!person) notFound();
 
   return (
-    <>
-      <PageHeader
-        back={
-          <>
-            <Link href="/people" className="hover:text-foreground">
-              사람
-            </Link>
-            {person.companyId && (
-              <>
-                <span className="mx-1.5">/</span>
-                <Link href={`/companies/${person.companyId}`} className="hover:text-foreground">
-                  {person.companyName}
-                </Link>
-              </>
+    <div className="mx-auto max-w-4xl p-6 sm:p-8 space-y-7">
+      <DetailHeaderSetter title={person.name} subtitle={person.companyName || person.department || undefined} />
+      {/* 3열 상단 헤더 바 */}
+      <div className="flex items-start justify-between border-b border-border/80 pb-5">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">{person.name}</h1>
+            {person.companyName && (
+              <Link
+                href={`/companies/${person.companyId}`}
+                className="rounded-md bg-muted px-2 py-0.5 text-[12px] font-medium text-text-2 hover:text-blue transition-colors"
+              >
+                {person.companyName}
+              </Link>
             )}
-          </>
-        }
-        title={person.name}
-        description={
-          <>
+          </div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[13px] text-text-3">
             {[person.department, person.title].filter(Boolean).join(" · ")}
             {(person.email || person.phone) && (
-              <span className="ml-2 text-text-3">
+              <span className="flex items-center gap-2 text-text-3">
                 {person.email && (
                   <a href={`mailto:${person.email}`} className="hover:text-foreground">
                     {person.email}
                   </a>
                 )}
-                {person.email && person.phone && " · "}
+                {person.email && person.phone && "·"}
                 {person.phone}
               </span>
             )}
-          </>
-        }
-        actions={
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
           <Suspense>
             <PersonFormButton person={person} companies={companies} />
             <PersonDeleteButton id={person.id} />
           </Suspense>
-        }
-      />
+        </div>
+      </div>
+
       <Panel className="mb-6 grid grid-cols-2 gap-4 px-5 py-4 sm:grid-cols-3">
         <Stat label="진행 중" value={person.openCount} suffix="건" tone={person.openCount ? "blue" : "muted"} />
         <Stat label="전체 요청" value={person.taskCount} suffix="건" />
@@ -84,6 +83,7 @@ export default async function PersonDetailPage({ params, searchParams }: PagePro
       >
         <TaskTable tasks={tasks} hideRequester empty={{ title: "이 사람이 요청한 업무가 없어요", description: "업무를 만들 때 요청자로 고르면 여기에 쌓여요" }} />
       </Section>
-    </>
+    </div>
   );
 }
+

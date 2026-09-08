@@ -266,12 +266,14 @@ export async function listWorkByDate(date: string): Promise<WorkTimelineItem[]> 
   }));
 }
 
-/** 최근 N일 중 작업이 있는 날짜와 건수 (타임라인 날짜 네비용) */
-export async function listWorkDates(days = 60): Promise<{ date: string; count: number }[]> {
-  const since = new Date(Date.now() - days * 86400000).toISOString();
-  const rows = unwrap(
-    await supabase().from("work").select("worked_at").gte("worked_at", since).is("deleted_at", null).returns<{ worked_at: string }[]>(),
-  );
+/** 작업이 있는 날짜와 건수 (타임라인 날짜 네비용. days 미지정 시 전체 조회) */
+export async function listWorkDates(days?: number): Promise<{ date: string; count: number }[]> {
+  let q = supabase().from("work").select("worked_at").is("deleted_at", null);
+  if (days) {
+    const since = new Date(Date.now() - days * 86400000).toISOString();
+    q = q.gte("worked_at", since);
+  }
+  const rows = unwrap(await q.returns<{ worked_at: string }[]>());
   const m = new Map<string, number>();
   for (const r of rows) {
     const d = toDateKst(r.worked_at);
@@ -302,3 +304,20 @@ export async function getLastUsedProjectId(): Promise<number | null> {
   );
   return row?.project_id ?? null;
 }
+
+/** 작업 추가 모달 등에서 사용할 업무 선택 목록 */
+export async function listTaskOptions(): Promise<{ id: number; label: string }[]> {
+  const rows = unwrap(
+    await supabase()
+      .from("tasks")
+      .select("id, title, project:projects(name)")
+      .is("deleted_at", null)
+      .order("updated_at", { ascending: false })
+      .returns<{ id: number; title: string; project: { name: string } | null }[]>(),
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    label: r.project?.name ? `${r.title} (${r.project.name})` : r.title,
+  }));
+}
+
