@@ -34,7 +34,7 @@ const INITIAL_MESSAGES: ChatMessage[] = [
 ];
 
 const QUICK_PROMPTS = [
-  { label: "SEED-TICK 프로젝트 설명", prompt: "SEED-TICK 프로젝트에 대해서 설명해줘" },
+  { label: "가스링크 프로젝트 설명", prompt: "가스링크 프로젝트에 대해서 설명해줘" },
   { label: "오늘 진행 중인 업무 요약", prompt: "현재 진행 중인 주요 업무와 우선순위를 알려줘" },
   { label: "최근 작업 일지 브리핑", prompt: "최근 작성된 작업 일지들을 간단히 브리핑해줘" },
 ];
