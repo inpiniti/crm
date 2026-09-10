@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 interface ProjectListNavProps {
   projects: ProjectListItem[];
   companies: Option[];
+  basePath?: string;
+  title?: string;
 }
 
 function formatPeriod(startedAt: string | null, endedAt: string | null): string {
@@ -22,7 +24,7 @@ function formatPeriod(startedAt: string | null, endedAt: string | null): string 
   return `${start} ~ ${end}`;
 }
 
-export function ProjectListNav({ projects, companies }: ProjectListNavProps) {
+export function ProjectListNav({ projects, companies, basePath = "", title = "프로젝트" }: ProjectListNavProps) {
   const pathname = usePathname();
   const [query, setQuery] = useState("");
 
@@ -37,7 +39,7 @@ export function ProjectListNav({ projects, companies }: ProjectListNavProps) {
       {/* 2열 헤더 */}
       <div className="flex h-13 items-center justify-between border-b border-border px-3.5">
         <div className="flex items-center gap-2">
-          <span className="text-[14px] font-bold text-foreground">프로젝트</span>
+          <span className="text-[14px] font-bold text-foreground">{title}</span>
           <span className="num rounded-full bg-muted px-1.5 py-0.2 text-[11px] font-semibold text-text-3">
             {projects.length}
           </span>
@@ -73,7 +75,7 @@ export function ProjectListNav({ projects, companies }: ProjectListNavProps) {
             return (
               <Link
                 key={p.id}
-                href={`/projects/${p.id}`}
+                href={`${basePath}/projects/${p.id}`}
                 className={cn(
                   "group block px-3.5 py-2.5 transition-colors",
                   isActive

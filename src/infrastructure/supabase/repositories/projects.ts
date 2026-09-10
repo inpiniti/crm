@@ -8,6 +8,8 @@ import type { Option } from "./companies";
 
 const T = "projects";
 
+export type ProjectScope = "all" | "personal";
+
 export const projectRepository: ProjectRepository = {
   async findById(id) {
     const row = unwrap(
@@ -53,10 +55,13 @@ export interface ProjectListItem extends Project {
   totalMin: number;
 }
 
-export async function listProjects(opts: { includeArchived?: boolean; companyId?: number } = {}): Promise<ProjectListItem[]> {
+export async function listProjects(
+  opts: { includeArchived?: boolean; companyId?: number; scope?: ProjectScope } = {},
+): Promise<ProjectListItem[]> {
   const db = supabase();
   let q = db.from(T).select("*, company:companies(id,name)").is("deleted_at", null).order("name");
   if (!opts.includeArchived) q = q.eq("status", "active");
+  if (opts.scope === "personal") q = q.is("company_id", null);
   if (opts.companyId) q = q.eq("company_id", opts.companyId);
   const rows = unwrap(await q.returns<ProjectJoined[]>());
   const summary = unwrap(
@@ -90,31 +95,35 @@ export async function listProjects(opts: { includeArchived?: boolean; companyId?
     });
 }
 
-export async function getProjectDetail(id: number): Promise<ProjectListItem | null> {
-  const all = await listProjects({ includeArchived: true });
+export async function getProjectDetail(id: number, opts: { scope?: ProjectScope } = {}): Promise<ProjectListItem | null> {
+  const all = await listProjects({ includeArchived: true, scope: opts.scope });
   return all.find((p) => p.id === id) ?? null;
 }
 
 export interface ProjectOption extends Option {
   companyName: string | null;
+  companyId: number | null;
 }
 
 /** active 프로젝트만 (업무 생성/이동 대상) */
-export async function listProjectOptions(): Promise<ProjectOption[]> {
+export async function listProjectOptions(opts: { scope?: ProjectScope } = {}): Promise<ProjectOption[]> {
+  const personalOnly = opts.scope === "personal";
+  let q = supabase()
+    .from(T)
+    .select("id,name, company:companies(id,name)")
+    .is("deleted_at", null)
+    .eq("status", "active")
+    .order("name");
+  if (personalOnly) q = q.is("company_id", null);
   const rows = unwrap(
-    await supabase()
-      .from(T)
-      .select("id,name, company:companies(name)")
-      .is("deleted_at", null)
-      .eq("status", "active")
-      .order("name")
-      .returns<{ id: number; name: string; company: { name: string } | null }[]>(),
+    await q.returns<{ id: number; name: string; company: { id: number; name: string } | null }[]>(),
   );
   return rows
     .map((r) => ({
       id: r.id,
       label: r.company ? `${r.company.name} · ${r.name}` : `개인 · ${r.name}`,
       companyName: r.company?.name ?? null,
+      companyId: r.company?.id ?? null,
     }))
     .sort((a, b) => a.label.localeCompare(b.label, "ko"));
 }

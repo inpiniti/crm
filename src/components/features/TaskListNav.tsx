@@ -13,9 +13,11 @@ import { cn } from "@/lib/utils";
 
 interface TaskListNavProps {
   tasks: TaskListItem[];
+  basePath?: string;
+  title?: string;
 }
 
-export function TaskListNav({ tasks }: TaskListNavProps) {
+export function TaskListNav({ tasks, basePath = "", title = "업무" }: TaskListNavProps) {
   const pathname = usePathname();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "doing" | "todo" | "done">("all");
@@ -37,7 +39,7 @@ export function TaskListNav({ tasks }: TaskListNavProps) {
       {/* 2열 헤더 */}
       <div className="flex h-13 items-center justify-between border-b border-border px-3.5">
         <div className="flex items-center gap-2">
-          <span className="text-[14px] font-bold text-foreground">업무</span>
+          <span className="text-[14px] font-bold text-foreground">{title}</span>
           <span className="num rounded-full bg-muted px-1.5 py-0.2 text-[11px] font-semibold text-text-3">
             {filtered.length}
           </span>
@@ -93,13 +95,13 @@ export function TaskListNav({ tasks }: TaskListNavProps) {
           </div>
         ) : (
           filtered.map((t) => {
-            const isActive = pathname === `/tasks/${t.id}`;
+            const isActive = pathname === `${basePath}/tasks/${t.id}`;
             const overdue = isOverdue(t);
 
             return (
               <Link
                 key={t.id}
-                href={`/tasks/${t.id}`}
+                href={`${basePath}/tasks/${t.id}`}
                 className={cn(
                   "group block px-3.5 py-2.5 transition-colors",
                   isActive

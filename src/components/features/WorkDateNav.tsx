@@ -14,9 +14,11 @@ interface WorkDateNavProps {
   currentDate: string;
   today: string;
   taskOptions?: { id: number; label: string }[];
+  basePath?: string;
+  title?: string;
 }
 
-export function WorkDateNav({ dates, currentDate, today, taskOptions = [] }: WorkDateNavProps) {
+export function WorkDateNav({ dates, currentDate, today, taskOptions = [], basePath = "", title = "작업 일지" }: WorkDateNavProps) {
   const router = useRouter();
 
   // Parse current date to set month picker
@@ -58,7 +60,7 @@ export function WorkDateNav({ dates, currentDate, today, taskOptions = [] }: Wor
     const prefix = `${y}-${m}`;
     const targetDate = dates.find((d) => d.date.startsWith(prefix));
     if (targetDate) {
-      router.push(`/work?date=${targetDate.date}`);
+      router.push(`${basePath}/work?date=${targetDate.date}`);
     }
   };
 
@@ -67,7 +69,7 @@ export function WorkDateNav({ dates, currentDate, today, taskOptions = [] }: Wor
       {/* 2열 헤더 */}
       <div className="flex h-13 items-center justify-between border-b border-border px-3.5">
         <div className="flex items-center gap-2">
-          <span className="text-[14px] font-bold text-foreground">작업 일지</span>
+          <span className="text-[14px] font-bold text-foreground">{title}</span>
           <span className="num rounded-full bg-muted px-1.5 py-0.2 text-[11px] font-semibold text-text-3">
             {dates.length}일
           </span>
@@ -75,7 +77,7 @@ export function WorkDateNav({ dates, currentDate, today, taskOptions = [] }: Wor
         <div className="flex items-center gap-1.5">
           {currentDate !== today && (
             <Link
-              href="/work"
+              href={`${basePath}/work`}
               className="rounded px-2 py-0.5 text-[11.5px] font-medium text-blue hover:bg-blue-weak transition-colors"
             >
               오늘로
@@ -141,7 +143,7 @@ export function WorkDateNav({ dates, currentDate, today, taskOptions = [] }: Wor
             return (
               <Link
                 key={d.date}
-                href={`/work?date=${d.date}`}
+                href={`${basePath}/work?date=${d.date}`}
                 className={cn(
                   "group flex items-center justify-between px-3.5 py-2.5 transition-colors",
                   isActive

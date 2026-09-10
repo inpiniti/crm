@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createTaskAction } from "@/app/actions/tasks";
 import { ActionForm, SubmitButton } from "@/components/common/ActionForm";
 import { Combobox, type ComboOption } from "@/components/common/Combobox";
@@ -20,6 +20,11 @@ export function QuickAddTask({ projects, people }: { projects: ComboOption[]; pe
   const [projectId, setProjectId] = useState<number | null>(null);
   const [goDetail, setGoDetail] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const personalRoute = pathname.startsWith("/personal/");
+  const scopedProjects = personalRoute
+    ? projects.filter((p) => (p as ComboOption & { companyId?: number | null }).companyId == null)
+    : projects;
 
   const openModal = useCallback(() => {
     let last: number | null = null;
@@ -27,9 +32,9 @@ export function QuickAddTask({ projects, people }: { projects: ComboOption[]; pe
       const v = localStorage.getItem(LAST_PROJECT_KEY);
       if (v) last = Number(v);
     } catch {}
-    setProjectId(last && projects.some((p) => p.id === last) ? last : (projects[0]?.id ?? null));
+    setProjectId(last && scopedProjects.some((p) => p.id === last) ? last : (scopedProjects[0]?.id ?? null));
     setOpen(true);
-  }, [projects]);
+  }, [scopedProjects]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -58,15 +63,17 @@ export function QuickAddTask({ projects, people }: { projects: ComboOption[]; pe
       <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>새 업무</DialogTitle>
-          <DialogDescription>제목만 적어도 돼요. 나머지는 나중에 채울 수 있어요.</DialogDescription>
+          <DialogDescription>
+            {personalRoute ? "개인 프로젝트에 넣을 업무예요. 제목만 적어도 돼요." : "제목만 적어도 돼요. 나머지는 나중에 채울 수 있어요."}
+          </DialogDescription>
         </DialogHeader>
-        {projects.length === 0 ? (
+        {scopedProjects.length === 0 ? (
           <div className="space-y-3">
             <p className="text-[13px] text-text-2">업무를 넣을 프로젝트가 아직 없어요. 프로젝트를 먼저 만들어 주세요.</p>
             <Button
               onClick={() => {
                 setOpen(false);
-                router.push("/projects?new=1");
+                router.push(personalRoute ? "/personal/projects?new=1" : "/projects?new=1");
               }}
             >
               프로젝트 만들기
@@ -91,7 +98,7 @@ export function QuickAddTask({ projects, people }: { projects: ComboOption[]; pe
             </Field>
             <FormRow>
               <Field label="프로젝트">
-                <Combobox name="projectId" options={projects} value={projectId} onChange={setProjectId} />
+                <Combobox name="projectId" options={scopedProjects} value={projectId} onChange={setProjectId} />
               </Field>
               <Field label="요청자">
                 <Combobox name="requesterId" options={people} value={null} nullLabel="내가 직접" />

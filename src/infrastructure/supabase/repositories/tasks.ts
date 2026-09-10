@@ -146,6 +146,24 @@ export interface TaskFilter {
   limit?: number;
 }
 
+export type TaskScope = "all" | "personal";
+
+async function listScopedProjectIds(scope: TaskScope | undefined): Promise<number[] | null> {
+  if (scope !== "personal") return null;
+  const rows = unwrap(
+    await supabase().from("projects").select("id").is("deleted_at", null).is("company_id", null).returns<{ id: number }[]>(),
+  );
+  return rows.map((row) => row.id);
+}
+
+async function listTaskIdsByProjectIds(projectIds: number[]): Promise<number[]> {
+  if (projectIds.length === 0) return [];
+  const rows = unwrap(
+    await supabase().from("tasks").select("id").is("deleted_at", null).in("project_id", projectIds).returns<{ id: number }[]>(),
+  );
+  return rows.map((row) => row.id);
+}
+
 function mapTask(r: TaskJoined): TaskListItem {
   return {
     ...toTask(r),
@@ -175,12 +193,16 @@ function sanitizeSearch(s: string): string {
   return s.replace(/[,()%\\"']/g, " ").trim();
 }
 
-export async function listTasks(f: TaskFilter = {}): Promise<TaskListItem[]> {
+export async function listTasks(f: TaskFilter & { scope?: TaskScope } = {}): Promise<TaskListItem[]> {
+  const personalProjectIds = await listScopedProjectIds(f.scope);
+  const personalTaskIds = personalProjectIds ? await listTaskIdsByProjectIds(personalProjectIds) : null;
+  if (f.scope === "personal" && (!personalTaskIds || personalTaskIds.length === 0)) return [];
   let q = taskQuery();
   const status = f.status ?? "open";
   if (status === "open") q = q.in("status", [...OPEN_STATUSES]);
   else if (status !== "all") q = q.eq("status", status);
   if (f.projectId) q = q.eq("project_id", f.projectId);
+  if (personalTaskIds) q = q.in("id", personalTaskIds);
   if (f.requesterId) q = q.eq("requester_id", f.requesterId);
   const search = f.q ? sanitizeSearch(f.q) : "";
   if (search) q = q.or(`title.ilike.%${search}%,body.ilike.%${search}%`);
@@ -242,21 +264,23 @@ export interface WorkTimelineItem extends Work {
   companyName: string | null;
 }
 
-export async function listWorkByDate(date: string): Promise<WorkTimelineItem[]> {
+export async function listWorkByDate(date: string, scope: TaskScope = "all"): Promise<WorkTimelineItem[]> {
   const { start, end } = dayRangeKst(date);
+  const personalProjectIds = await listScopedProjectIds(scope);
+  const personalTaskIds = personalProjectIds ? await listTaskIdsByProjectIds(personalProjectIds) : null;
+  if (scope === "personal" && (!personalTaskIds || personalTaskIds.length === 0)) return [];
   type Row = WorkRow & {
     task: { id: number; title: string; status: TaskStatus; project: { name: string; company: { name: string } | null } | null } | null;
   };
-  const rows = unwrap(
-    await supabase()
-      .from("work")
-      .select("*, task:tasks(id,title,status, project:projects(name, company:companies(name)))")
-      .gte("worked_at", start)
-      .lt("worked_at", end)
-      .is("deleted_at", null)
-      .order("worked_at")
-      .returns<Row[]>(),
-  );
+  let q = supabase()
+    .from("work")
+    .select("*, task:tasks(id,title,status, project:projects(name, company:companies(name)))")
+    .gte("worked_at", start)
+    .lt("worked_at", end)
+    .is("deleted_at", null)
+    .order("worked_at");
+  if (personalTaskIds) q = q.in("task_id", personalTaskIds);
+  const rows = unwrap(await q.returns<Row[]>());
   return rows.map((r) => ({
     ...toWork(r),
     taskTitle: r.task?.title ?? "",
@@ -267,8 +291,12 @@ export async function listWorkByDate(date: string): Promise<WorkTimelineItem[]> 
 }
 
 /** 작업이 있는 날짜와 건수 (타임라인 날짜 네비용. days 미지정 시 전체 조회) */
-export async function listWorkDates(days?: number): Promise<{ date: string; count: number }[]> {
+export async function listWorkDates(days?: number, scope: TaskScope = "all"): Promise<{ date: string; count: number }[]> {
+  const personalProjectIds = await listScopedProjectIds(scope);
+  const personalTaskIds = personalProjectIds ? await listTaskIdsByProjectIds(personalProjectIds) : null;
+  if (scope === "personal" && (!personalTaskIds || personalTaskIds.length === 0)) return [];
   let q = supabase().from("work").select("worked_at").is("deleted_at", null);
+  if (personalTaskIds) q = q.in("task_id", personalTaskIds);
   if (days) {
     const since = new Date(Date.now() - days * 86400000).toISOString();
     q = q.gte("worked_at", since);
@@ -282,10 +310,13 @@ export async function listWorkDates(days?: number): Promise<{ date: string; coun
   return [...m.entries()].map(([date, count]) => ({ date, count })).sort((a, b) => b.date.localeCompare(a.date));
 }
 
-export async function listAllTags(): Promise<string[]> {
-  const rows = unwrap(
-    await supabase().from("tasks").select("tags").is("deleted_at", null).returns<{ tags: string[] }[]>(),
-  );
+export async function listAllTags(scope: TaskScope = "all"): Promise<string[]> {
+  const personalProjectIds = await listScopedProjectIds(scope);
+  const personalTaskIds = personalProjectIds ? await listTaskIdsByProjectIds(personalProjectIds) : null;
+  if (scope === "personal" && (!personalTaskIds || personalTaskIds.length === 0)) return [];
+  let q = supabase().from("tasks").select("tags").is("deleted_at", null);
+  if (personalTaskIds) q = q.in("id", personalTaskIds);
+  const rows = unwrap(await q.returns<{ tags: string[] }[]>());
   const s = new Set<string>();
   for (const r of rows) for (const t of r.tags ?? []) s.add(t);
   return [...s].sort((a, b) => a.localeCompare(b, "ko"));
@@ -306,15 +337,13 @@ export async function getLastUsedProjectId(): Promise<number | null> {
 }
 
 /** 작업 추가 모달 등에서 사용할 업무 선택 목록 */
-export async function listTaskOptions(): Promise<{ id: number; label: string }[]> {
-  const rows = unwrap(
-    await supabase()
-      .from("tasks")
-      .select("id, title, project:projects(name)")
-      .is("deleted_at", null)
-      .order("updated_at", { ascending: false })
-      .returns<{ id: number; title: string; project: { name: string } | null }[]>(),
-  );
+export async function listTaskOptions(opts: { scope?: TaskScope } = {}): Promise<{ id: number; label: string }[]> {
+  const personalProjectIds = await listScopedProjectIds(opts.scope);
+  const personalTaskIds = personalProjectIds ? await listTaskIdsByProjectIds(personalProjectIds) : null;
+  if (opts.scope === "personal" && (!personalTaskIds || personalTaskIds.length === 0)) return [];
+  let q = supabase().from("tasks").select("id, title, project:projects(name)").is("deleted_at", null).order("updated_at", { ascending: false });
+  if (personalTaskIds) q = q.in("id", personalTaskIds);
+  const rows = unwrap(await q.returns<{ id: number; title: string; project: { name: string } | null }[]>());
   return rows.map((r) => ({
     id: r.id,
     label: r.project?.name ? `${r.title} (${r.project.name})` : r.title,

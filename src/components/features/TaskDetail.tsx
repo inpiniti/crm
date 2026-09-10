@@ -25,7 +25,17 @@ import type { TaskDetail as TaskDetailModel } from "@/infrastructure/supabase/re
 import { formatDateTime, relativeDay, toDateTimeLocal } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
-export function TaskHeader({ task, projects, people }: { task: TaskDetailModel; projects: ComboOption[]; people: ComboOption[] }) {
+export function TaskHeader({
+  task,
+  projects,
+  people,
+  basePath = "",
+}: {
+  task: TaskDetailModel;
+  projects: ComboOption[];
+  people: ComboOption[];
+  basePath?: string;
+}) {
   const [edit, setEdit] = useState(false);
   const router = useRouter();
   const overdue = isOverdue(task);
@@ -42,11 +52,11 @@ export function TaskHeader({ task, projects, people }: { task: TaskDetailModel; 
     <>
       <div className="mb-6">
         <div className="mb-1.5 text-[13px] text-text-3">
-          <Link href="/tasks" className="hover:text-foreground">
+          <Link href={`${basePath}/tasks`} className="hover:text-foreground">
             업무
           </Link>
           <span className="mx-1.5">/</span>
-          <Link href={`/projects/${task.projectId}`} className="hover:text-foreground">
+          <Link href={`${basePath}/projects/${task.projectId}`} className="hover:text-foreground">
             {task.companyName ? `${task.companyName} · ` : ""}
             {task.projectName}
           </Link>

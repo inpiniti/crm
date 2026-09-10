@@ -11,11 +11,13 @@ export function TaskTable({
   hideProject,
   hideRequester,
   empty,
+  basePath = "",
 }: {
   tasks: TaskListItem[];
   hideProject?: boolean;
   hideRequester?: boolean;
   empty?: { title: string; description?: string };
+  basePath?: string;
 }) {
   if (tasks.length === 0) {
     return <EmptyState icon={ListTodo} title={empty?.title ?? "아직 업무가 없어요"} description={empty?.description ?? "n 키를 누르면 바로 추가할 수 있어요"} />;
@@ -43,7 +45,7 @@ export function TaskTable({
                   </span>
                 </td>
                 <td className="h-11 px-2">
-                  <Link href={`/tasks/${t.id}`} className="font-medium text-foreground hover:text-blue">
+                  <Link href={`${basePath}/tasks/${t.id}`} className="font-medium text-foreground hover:text-blue">
                     {t.title}
                   </Link>
                   {(t.priority !== "normal" || t.tags.length > 0) && (
@@ -57,7 +59,7 @@ export function TaskTable({
                 </td>
                 {!hideProject && (
                   <td className="hidden h-11 px-2 text-text-2 md:table-cell">
-                    <Link href={`/projects/${t.projectId}`} className="hover:text-blue">
+                    <Link href={`${basePath}/projects/${t.projectId}`} className="hover:text-blue">
                       {t.companyName ? <span className="text-text-3">{t.companyName} · </span> : null}
                       {t.projectName}
                     </Link>
