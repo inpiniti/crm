@@ -8,7 +8,21 @@ import type { Option } from "./companies";
 
 const T = "projects";
 
-export type ProjectScope = "all" | "personal";
+export type ProjectScope = "all" | "company" | "personal";
+
+async function listProjectIdsByScope(scope: ProjectScope = "company"): Promise<number[] | null> {
+  if (scope === "all") return null;
+  const rows = unwrap(
+    await supabase()
+      .from(T)
+      .select("id")
+      .is("deleted_at", null)
+      .is("company_id", scope === "personal" ? null : undefined)
+      .not("company_id", "is", scope === "personal" ? undefined : null)
+      .returns<{ id: number }[]>(),
+  );
+  return rows.map((row) => row.id);
+}
 
 export const projectRepository: ProjectRepository = {
   async findById(id) {
@@ -61,7 +75,8 @@ export async function listProjects(
   const db = supabase();
   let q = db.from(T).select("*, company:companies(id,name)").is("deleted_at", null).order("name");
   if (!opts.includeArchived) q = q.eq("status", "active");
-  if (opts.scope === "personal") q = q.is("company_id", null);
+  if ((opts.scope ?? "company") === "personal") q = q.is("company_id", null);
+  if ((opts.scope ?? "company") === "company") q = q.not("company_id", "is", null);
   if (opts.companyId) q = q.eq("company_id", opts.companyId);
   const rows = unwrap(await q.returns<ProjectJoined[]>());
   const summary = unwrap(
@@ -96,7 +111,7 @@ export async function listProjects(
 }
 
 export async function getProjectDetail(id: number, opts: { scope?: ProjectScope } = {}): Promise<ProjectListItem | null> {
-  const all = await listProjects({ includeArchived: true, scope: opts.scope });
+  const all = await listProjects({ includeArchived: true, scope: opts.scope ?? "company" });
   return all.find((p) => p.id === id) ?? null;
 }
 
@@ -107,14 +122,15 @@ export interface ProjectOption extends Option {
 
 /** active 프로젝트만 (업무 생성/이동 대상) */
 export async function listProjectOptions(opts: { scope?: ProjectScope } = {}): Promise<ProjectOption[]> {
-  const personalOnly = opts.scope === "personal";
+  const scope = opts.scope ?? "company";
   let q = supabase()
     .from(T)
     .select("id,name, company:companies(id,name)")
     .is("deleted_at", null)
     .eq("status", "active")
     .order("name");
-  if (personalOnly) q = q.is("company_id", null);
+  if (scope === "personal") q = q.is("company_id", null);
+  if (scope === "company") q = q.not("company_id", "is", null);
   const rows = unwrap(
     await q.returns<{ id: number; name: string; company: { id: number; name: string } | null }[]>(),
   );

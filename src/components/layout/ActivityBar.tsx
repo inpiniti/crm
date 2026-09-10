@@ -22,6 +22,9 @@ const NAV_ITEMS = [
   { href: "/projects", label: "프로젝트", icon: FolderKanban },
   { href: "/tasks", label: "업무", icon: ListTodo },
   { href: "/work", label: "작업", icon: Clock },
+  { href: "/personal/projects", label: "개인 프로젝트", icon: FolderKanban },
+  { href: "/personal/tasks", label: "개인 업무", icon: ListTodo },
+  { href: "/personal/work", label: "개인 작업", icon: Clock },
 ] as const;
 
 export function ActivityBar() {

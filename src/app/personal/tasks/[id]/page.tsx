@@ -13,7 +13,7 @@ export default async function PersonalTaskDetailPage({ params }: { params: Promi
   const n = Number(id);
   if (!Number.isInteger(n)) notFound();
   const [task, projects, people] = await Promise.all([
-    getTaskDetail(n),
+    getTaskDetail(n, "personal"),
     listProjectOptions({ scope: "personal" }),
     listPersonOptions(),
   ]);

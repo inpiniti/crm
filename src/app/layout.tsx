@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [projects, people] = await Promise.all([
-    listProjectOptions().catch(() => []),
+    listProjectOptions({ scope: "all" }).catch(() => []),
     listPersonOptions().catch(() => []),
   ]);
   return (

@@ -24,7 +24,7 @@ export function QuickAddTask({ projects, people }: { projects: ComboOption[]; pe
   const personalRoute = pathname.startsWith("/personal/");
   const scopedProjects = personalRoute
     ? projects.filter((p) => (p as ComboOption & { companyId?: number | null }).companyId == null)
-    : projects;
+    : projects.filter((p) => (p as ComboOption & { companyId?: number | null }).companyId != null);
 
   const openModal = useCallback(() => {
     let last: number | null = null;

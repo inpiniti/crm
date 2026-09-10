@@ -20,7 +20,7 @@ export default async function PersonalProjectDetailPage({ params, searchParams }
   const showAll = sp.all !== "0";
   const [project, tasks, companies] = await Promise.all([
     getProjectDetail(n, { scope: "personal" }),
-    listTasks({ projectId: n, status: showAll ? "all" : "open" }),
+    listTasks({ projectId: n, status: showAll ? "all" : "open", scope: "personal" }),
     listCompanyOptions(),
   ]);
   if (!project) notFound();
@@ -66,26 +66,35 @@ export default async function PersonalProjectDetailPage({ params, searchParams }
         <Stat label="전체" value={project.taskCount} suffix="건" />
         <Stat label="소요" value={project.totalMin ? formatDuration(project.totalMin) : "—"} tone={project.totalMin ? "default" : "muted"} />
       </Panel>
-      {project.description && (
-        <Panel className="mb-6 p-4">
-          <Markdown>{project.description}</Markdown>
-        </Panel>
-      )}
-      <Section
-        title="업무"
-        extra={
-          <Link href={showAll ? `/personal/projects/${n}?all=0` : `/personal/projects/${n}`} className="text-[13px] text-text-3 hover:text-foreground">
-            {showAll ? "진행 중만 보기" : "완료된 것도 보기"}
-          </Link>
-        }
-      >
-        <TaskTable
-          tasks={tasks}
-          hideProject
-          basePath="/personal"
-          empty={{ title: "이 프로젝트에 업무가 없어요", description: project.status === "archived" ? "종료된 프로젝트예요" : "n 키로 바로 추가할 수 있어요" }}
-        />
-      </Section>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.85fr)] items-start">
+        <div className="min-w-0">
+          {project.description ? (
+            <Panel className="p-4 break-words">
+              <Markdown>{project.description}</Markdown>
+            </Panel>
+          ) : (
+            <div />
+          )}
+        </div>
+        <div className="min-w-0">
+          <Section
+            title="업무"
+            extra={
+              <Link href={showAll ? `/personal/projects/${n}?all=0` : `/personal/projects/${n}`} className="text-[13px] text-text-3 hover:text-foreground">
+                {showAll ? "진행 중만 보기" : "완료된 것도 보기"}
+              </Link>
+            }
+          >
+            <TaskTable
+              tasks={tasks}
+              hideProject
+              basePath="/personal"
+              compact
+              empty={{ title: "이 프로젝트에 업무가 없어요", description: project.status === "archived" ? "종료된 프로젝트예요" : "n 키로 바로 추가할 수 있어요" }}
+            />
+          </Section>
+        </div>
+      </div>
     </div>
   );
 }

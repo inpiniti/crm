@@ -12,16 +12,36 @@ export function TaskTable({
   hideRequester,
   empty,
   basePath = "",
+  compact = false,
 }: {
   tasks: TaskListItem[];
   hideProject?: boolean;
   hideRequester?: boolean;
   empty?: { title: string; description?: string };
   basePath?: string;
+  compact?: boolean;
 }) {
   if (tasks.length === 0) {
     return <EmptyState icon={ListTodo} title={empty?.title ?? "아직 업무가 없어요"} description={empty?.description ?? "n 키를 누르면 바로 추가할 수 있어요"} />;
   }
+
+  if (compact) {
+    return (
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="divide-y divide-border">
+          {tasks.map((t) => (
+            <Link key={t.id} href={`${basePath}/tasks/${t.id}`} className="block px-4 py-3 hover:bg-hover transition-colors">
+              <div className="flex items-center gap-2 min-w-0">
+                <StatusDot status={t.status} />
+                <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium text-foreground">{t.title}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       <table className="w-full text-[13.5px]">

@@ -69,7 +69,7 @@ export function ProjectListNav({ projects, companies, basePath = "", title = "Ìî
           </div>
         ) : (
           filtered.map((p) => {
-            const isActive = pathname === `/projects/${p.id}`;
+            const isActive = pathname === `${basePath}/projects/${p.id}`;
             const period = formatPeriod(p.startedAt, p.endedAt);
 
             return (
@@ -97,7 +97,10 @@ export function ProjectListNav({ projects, companies, basePath = "", title = "Ìî
                 </div>
                 <div className="mt-0.5 flex items-center justify-between text-[11.5px] text-text-3 font-normal">
                   <span className="truncate">{p.companyName ?? "Í∞úÏù∏"}</span>
-                  {period && <span className="num shrink-0 ml-1.5">{period}</span>}
+                  <span className="flex shrink-0 items-center gap-1.5 ml-1.5">
+                    {isActive && <span className="size-1.5 rounded-full bg-blue" aria-hidden />}
+                    {period && <span className="num">{period}</span>}
+                  </span>
                 </div>
               </Link>
             );
