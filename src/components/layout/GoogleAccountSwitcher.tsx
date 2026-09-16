@@ -11,10 +11,10 @@ import {
 export const DEFAULT_GOOGLE_ACCOUNTS = [
   "younginpiniti",
   "wjdOr12",
-  "youngkyun974",
   "potatomapyg",
   "youngkyun001",
   "youngkyun089",
+  "youngkyun974",
   "01.yg.jung",
   "02.yg.jung",
   "03.yg.jung",
