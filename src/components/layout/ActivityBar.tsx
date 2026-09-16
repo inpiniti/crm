@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { GoogleAccountSwitcher } from "./GoogleAccountSwitcher";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -95,26 +96,29 @@ export function ActivityBar() {
         })}
       </nav>
 
-      {/* 1열 하단: 새 업무 퀵 버튼 */}
-      <div className="border-t border-border p-2">
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent("quick-add"))}
-                className="flex w-full items-center justify-between rounded-lg border border-dashed border-border/80 px-2.5 py-1.5 text-[12.5px] text-text-2 transition-colors hover:border-blue/50 hover:bg-blue-weak/40 hover:text-blue"
-              />
-            }
-          >
-            <span className="flex items-center gap-1.5">
-              <Plus className="size-3.5" />
-              <span>새 업무</span>
-            </span>
-            <Kbd className="text-[10px] bg-muted/60">n</Kbd>
-          </TooltipTrigger>
-          <TooltipContent side="right">어느 화면에서든 n</TooltipContent>
-        </Tooltip>
+      {/* 1열 하단: Google Account 스위처 & 새 업무 퀵 버튼 */}
+      <div className="mt-auto">
+        <GoogleAccountSwitcher />
+        <div className="border-t border-border p-2">
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new CustomEvent("quick-add"))}
+                  className="flex w-full items-center justify-between rounded-lg border border-dashed border-border/80 px-2.5 py-1.5 text-[12.5px] text-text-2 transition-colors hover:border-blue/50 hover:bg-blue-weak/40 hover:text-blue"
+                />
+              }
+            >
+              <span className="flex items-center gap-1.5">
+                <Plus className="size-3.5" />
+                <span>새 업무</span>
+              </span>
+              <Kbd className="text-[10px] bg-muted/60">n</Kbd>
+            </TooltipTrigger>
+            <TooltipContent side="right">어느 화면에서든 n</TooltipContent>
+          </Tooltip>
+        </div>
       </div>
     </aside>
   );

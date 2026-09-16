@@ -206,3 +206,19 @@ ON CONFLICT (id) DO NOTHING;
 -- ===== 0007_task_started_at.sql =====
 -- 업무 시작일 (마감일과 별개로, 실제 일을 시작한/시작할 날짜)
 ALTER TABLE tasks ADD COLUMN started_at date;
+
+-- ===== 0008_app_settings.sql =====
+-- ===== 0008_app_settings.sql =====
+-- 앱 전역 설정 key-value 저장소
+CREATE TABLE IF NOT EXISTS app_settings (
+  key         text PRIMARY KEY,
+  value       text NOT NULL,
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TRIGGER trg_app_settings_updated_at BEFORE UPDATE ON app_settings
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- 초기값: 구글 계정 인덱스
+INSERT INTO app_settings (key, value) VALUES ('google_account_index', '0')
+  ON CONFLICT (key) DO NOTHING;
